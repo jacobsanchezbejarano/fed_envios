@@ -25,45 +25,53 @@ map.on('click', function(e) {
 
 // Handle form submission
 document.getElementById('submitBtn').addEventListener('click', function() {
-        // ... (Tu código anterior)
+    // Gather form data
+    var formData = {
+        pedido_id: document.getElementById('pedido_id').value,
+        pedido_latitud: document.getElementById('pedido_latitud').value,
+        pedido_longitud: document.getElementById('pedido_longitud').value,
+        pedido_pais: document.getElementById('pedido_pais').value,
+        pedido_ciudad: document.getElementById('pedido_ciudad').value,
+        pedido_celular: document.getElementById('pedido_celular').value,
+    };
 
-        fetch('https://envios-26fg.onrender.com/pedidos/', {
-            method: 'POST',
-            body: JSON.stringify(formData),
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Show the success modal
-                document.getElementById('successModal').style.display = 'block';
+    fetch('https://envios-26fg.onrender.com/pedidos/', {
+        method: 'POST',
+        body: JSON.stringify(formData),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show the success modal
+            document.getElementById('successModal').style.display = 'block';
 
-                // Clear the form
-                document.getElementById('pedido_id').value = '';
-                document.getElementById('pedido_latitud').value = '';
-                document.getElementById('pedido_longitud').value = '';
-                document.getElementById('pedido_pais').value = '';
-                document.getElementById('pedido_ciudad').value = '';
-                document.getElementById('pedido_celular').value = '';
-            } else {
-                // Show the error modal
-                document.getElementById('errorModal').style.display = 'block';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Show the error modal in case of a network error
+            // Clear the form
+            document.getElementById('pedido_id').value = '';
+            document.getElementById('pedido_latitud').value = '';
+            document.getElementById('pedido_longitud').value = '';
+            document.getElementById('pedido_pais').value = '';
+            document.getElementById('pedido_ciudad').value = '';
+            document.getElementById('pedido_celular').value = '';
+        } else {
+            // Show the error modal
             document.getElementById('errorModal').style.display = 'block';
-        });
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Show the error modal in case of a network error
+        document.getElementById('errorModal').style.display = 'block';
     });
+});
 
-    // Cerrar los modales cuando se haga clic en la "x"
-    document.getElementById('closeSuccessModal').addEventListener('click', function() {
-        document.getElementById('successModal').style.display = 'none';
-    });
+// Cerrar los modales cuando se haga clic en la "x"
+document.getElementById('closeSuccessModal').addEventListener('click', function() {
+    document.getElementById('successModal').style.display = 'none';
+});
 
-    document.getElementById('closeErrorModal').addEventListener('click', function() {
-        document.getElementById('errorModal').style.display = 'none';
-    });
+document.getElementById('closeErrorModal').addEventListener('click', function() {
+    document.getElementById('errorModal').style.display = 'none';
+});
