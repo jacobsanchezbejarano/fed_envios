@@ -36,8 +36,7 @@ document.getElementById('submitBtn').addEventListener('click', function() {
     };
 
     // Send the data to your web service using AJAX or other methods.
-    // Here's a basic example using the fetch API:
-    fetch('http://127.0.0.1:3000/pedidos/', {
+    fetch('https://envios-26fg.onrender.com/pedidos/', {
         method: 'POST',
         body: JSON.stringify(formData),
         headers: {
@@ -46,9 +45,26 @@ document.getElementById('submitBtn').addEventListener('click', function() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data); // Handle the response from your web service
+        if (data.success) {
+            // Show the success modal
+            $('#successModal').modal('show');
+
+            // Clear the form
+            document.getElementById('pedido_id').value = '';
+            document.getElementById('pedido_latitud').value = '';
+            document.getElementById('pedido_longitud').value = '';
+            document.getElementById('pedido_pais').value = '';
+            document.getElementById('pedido_ciudad').value = '';
+            document.getElementById('pedido_celular').value = '';
+        } else {
+            // Show the error modal
+            $('#errorModal').modal('show');
+        }
     })
     .catch(error => {
         console.error('Error:', error);
+        // Show the error modal in case of a network error
+        $('#errorModal').modal('show');
     });
 });
+
