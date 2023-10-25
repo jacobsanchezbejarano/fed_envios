@@ -35,6 +35,11 @@ document.getElementById('submitBtn').addEventListener('click', function() {
         pedido_celular: document.getElementById('pedido_celular').value,
     };
 
+    if(formData.pedido_id == "" || formData.pedido_latitud == "" || formData.pedido_longitud == "") {
+        document.getElementById('errorModal').style.display = 'block';
+        return;
+    }
+
     fetch('https://envios-26fg.onrender.com/pedidos/', {
         method: 'POST',
         body: JSON.stringify(formData),
@@ -44,7 +49,8 @@ document.getElementById('submitBtn').addEventListener('click', function() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.status === 201) {
+        console.log(data);
+        if (data.acknowledged === true) {
             // Show the success modal
             document.getElementById('successModal').style.display = 'block';
 
