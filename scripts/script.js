@@ -44,7 +44,7 @@ document.getElementById('submitBtn').addEventListener('click', function() {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
+        if (data.status === 201) {
             // Show the success modal
             document.getElementById('successModal').style.display = 'block';
 
