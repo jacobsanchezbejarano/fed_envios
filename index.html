@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Form</title>
+    <!-- Include Leaflet CSS and JavaScript -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        /* Style the map container */
+        #map {
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Order Form</h1>
+    <form id="orderForm">
+        <label for="pedido_id">Pedido ID:</label>
+        <input type="text" id="pedido_id" name="pedido_id" required><br>
+
+        <input type="hidden" id="pedido_latitud" name="pedido_latitud" required>
+
+        <input type="hidden" id="pedido_longitud" name="pedido_longitud" required>
+
+        <label for="pedido_pais">País:</label>
+        <input type="text" id="pedido_pais" name="pedido_pais" required><br>
+
+        <label for="pedido_ciudad">Ciudad:</label>
+        <input type="text" id="pedido_ciudad" name="pedido_ciudad" required><br>
+
+        <label for="pedido_celular">Celular:</label>
+        <input type="text" id="pedido_celular" name="pedido_celular" required><br>
+
+        <div id="map"></div>
+
+        <button type="button" id="submitBtn">Submit</button>
+    </form>
+
+    <script src="script.js"></script>
+</body>
+</html>
