@@ -11,7 +11,7 @@
     <h1>Lista de Pedidos</h1>
     <div class="container">
         <h2>Formulario de Pedido</h2>
-        <form id="pedidoForm">
+        <form id="pedidoForm" onsubmit="enviarPedido(event)">
           <div class="form-group">
             <label for="pedido_id">ID del Pedido:</label>
             <input type="text" id="pedido_id" name="pedido_id" value="" required>
