@@ -12,26 +12,26 @@
     <div class="container">
         <h2>Formulario de Pedido</h2>
         <form id="pedidoForm">
-          <div class="form-group">
+          <!-- <div class="form-group">
             <label for="pedido_id">ID del Pedido:</label>
             <input type="text" id="pedido_id" name="pedido_id" value="" required>
-          </div>
-          <div class="form-group">
+          </div> -->
+          <!-- <div class="form-group">
             <label for="pedido_latitud">Latitud:</label>
             <input type="text" id="pedido_latitud" name="pedido_latitud" value="" required>
           </div>
           <div class="form-group">
             <label for="pedido_longitud">Longitud:</label>
             <input type="text" id="pedido_longitud" name="pedido_longitud" value="" required>
-          </div>
-          <div class="form-group">
+          </div> -->
+          <!-- <div class="form-group">
             <label for="pedido_pais">País:</label>
             <input type="text" id="pedido_pais" name="pedido_pais" value="" required>
           </div>
           <div class="form-group">
             <label for="pedido_ciudad">Ciudad:</label>
             <input type="text" id="pedido_ciudad" name="pedido_ciudad" value="" required>
-          </div>
+          </div> -->
           <div class="form-group">
             <label for="pedido_celular">Celular:</label>
             <input type="text" id="pedido_celular" name="pedido_celular" value="" required>
@@ -46,11 +46,19 @@
           </div>
           <div class="form-group">
             <label for="pedido_estado">Estado:</label>
-            <input type="text" id="pedido_estado" name="pedido_estado" value="">
+            <select id="pedido_estado" name="pedido_estado">
+              <option value="">SELECCIONAR</option>
+              <option value="ENCARGADO">ENCARGADO</option>
+              <option value="PAGADO">PAGADO</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="pedido_tipo">Tipo:</label>
-            <input type="text" id="pedido_tipo" name="pedido_tipo" value="">
+            <select id="pedido_tipo" name="pedido_tipo">
+              <option value="">SELECCIONAR</option>
+              <option value="DELIVERY">DELIVERY</option>
+              <option value="EN LUGAR">EN LUGAR</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="pedido_hora_entrega">Hora de Entrega:</label>
@@ -66,7 +74,20 @@
           </div>
           <div class="form-group">
             <label for="pedido_vendedor">Vendedor:</label>
-            <input type="text" id="pedido_vendedor" name="pedido_vendedor" value="">
+            <select id="pedido_vendedor" name="pedido_vendedor">
+              <option value="">SELECCIONAR</option>
+              <select id="pedido_vendedor" name="pedido_vendedor">
+                  <option value="">SELECCIONAR</option>
+                  <option value="Jacob">Jacob</option>
+                  <option value="Gaby">Gaby</option>
+                  <option value="Angelica">Angelica</option>
+                  <option value="Milena">Milena</option>
+                  <option value="Carolina Vaca">Carolina Vaca</option>
+                  <option value="Roxana Suarez">Roxana Suarez</option>
+                  <option value="Yanine">Yanine</option>
+              </select>
+            
+            </select>
           </div>
     
           <button type="button" onclick="enviarPedido(event)">Enviar Pedido</button>
