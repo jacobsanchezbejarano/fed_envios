@@ -11,7 +11,7 @@
     <h1>Lista de Pedidos</h1>
     <div class="container">
         <h2>Formulario de Pedido</h2>
-        <form id="pedidoForm" onsubmit="enviarPedido(event)">
+        <form id="pedidoForm">
           <div class="form-group">
             <label for="pedido_id">ID del Pedido:</label>
             <input type="text" id="pedido_id" name="pedido_id" value="" required>
@@ -69,7 +69,7 @@
             <input type="text" id="pedido_vendedor" name="pedido_vendedor" value="">
           </div>
     
-          <button type="button">Enviar Pedido</button>
+          <button type="button" onclick="enviarPedido(event)">Enviar Pedido</button>
         </form>
       </div>
 
