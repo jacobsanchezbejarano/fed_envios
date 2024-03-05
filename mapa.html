@@ -5,49 +5,30 @@
     <!-- Include Leaflet CSS and JavaScript -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/mapa.css">
 </head>
 <body>
     <h1>Order Form</h1>
-    <form id="orderForm">
-        <label for="pedido_id">Pedido ID:</label>
-        <input type="text" id="pedido_id" name="pedido_id" required><br>
-
-        <input type="hidden" id="pedido_latitud" name="pedido_latitud" required>
-
-        <input type="hidden" id="pedido_longitud" name="pedido_longitud" required>
-
-        <!-- <label for="pedido_pais">País:</label> -->
-        <input type="hidden" id="pedido_pais" name="pedido_pais" required><br>
-
-        <!-- <label for="pedido_ciudad">Ciudad:</label> -->
-        <input type="hidden" id="pedido_ciudad" name="pedido_ciudad" required><br>
-
-        <!-- <label for="pedido_celular">Celular:</label> -->
-        <input type="hidden" id="pedido_celular" name="pedido_celular" required><br>
 
         <div id="map"></div>
 
-        <button type="button" id="submitBtn">Submit</button>
-    </form>
-
     <!-- Modal de éxito -->
-    <div id="successModal" class="modal">
+    <!-- <div id="successModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeSuccessModal">&times;</span>
             <h2>Éxito</h2>
             <p>¡El formulario se ha enviado con éxito!</p>
         </div>
-    </div>
+    </div> -->
 
     <!-- Modal de fallo -->
-    <div id="errorModal" class="modal">
+    <!-- <div id="errorModal" class="modal">
         <div class="modal-content">
             <span class="close" id="closeErrorModal">&times;</span>
             <h2>Error</h2>
             <p>Ha ocurrido un error al enviar el formulario.</p>
         </div>
-    </div>
+    </div> -->
 
 
 
