@@ -19,6 +19,7 @@ async function enviarPedido(event) {
   
       console.log('Datos enviados exitosamente:', await response.json());
       alert('Datos enviados exitosamente');
+      document.getElementById("pedidoForm").reset();
     } catch (error) {
       console.error('Error al enviar los datos a la API:', error);
     }
@@ -55,6 +56,7 @@ async function enviarPedido(event) {
       "Zona",
       "Comentarios",
       "Vendedor",
+      "Acciones"
     ];
     for (const key of header_pedidos) {
       const th = document.createElement('th');
@@ -65,7 +67,6 @@ async function enviarPedido(event) {
     pedidos.forEach(pedido => {
       const fila = cuerpo.insertRow();
       for (const key in pedido) {
-        
         switch(key) {
             case 'pedido_celular':
             case 'pedido_nombre':
@@ -83,6 +84,16 @@ async function enviarPedido(event) {
                 // No hacer nada o manejar otros casos si es necesario
                 break;
         }
+    }
+    
+    // Después del bucle, agregar el enlace al final si corresponde
+    if (pedido.pedido_latitud !== '') {
+        var link = document.createElement('a');
+        link.href = 'https://www.google.com/maps/place/' + pedido.pedido_latitud + ',' + pedido.pedido_longitud;
+        link.target = '_blank';
+        link.textContent = 'Ir a mapa';
+        const celda = fila.insertCell();
+        celda.appendChild(link);
     }
     
     });
