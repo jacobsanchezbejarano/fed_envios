@@ -25,7 +25,7 @@ async function enviarPedido(event) {
 
   async function obtenerPedidos() {
     try {
-      const response = await fetch('https://envios-26fg.onrender.com/envios');
+      const response = await fetch('https://envios-26fg.onrender.com/pedidos');
       if (!response.ok) {
         throw new Error('Error al obtener los pedidos.');
       }
