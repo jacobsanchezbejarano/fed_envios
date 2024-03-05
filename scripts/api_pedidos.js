@@ -30,7 +30,17 @@ async function enviarPedido(event) {
         throw new Error('Error al obtener los pedidos.');
       }
       const data = await response.json();
-      return data;
+      return {
+        pedido_celular: data.pedido_celular,
+        pedido_nombre: data.pedido_nombre,
+        pedido_cantidad: data.pedido_cantidad,
+        pedido_estado: data.pedido_estado,
+        pedido_tipo: data.pedido_tipo,
+        pedido_hora_entrega: data.pedido_hora_entrega,
+        pedido_zona: data.pedido_zona,
+        pedido_comentarios: data.pedido_comentarios,
+        pedido_vendedor: data.pedido_vendedor,
+      };
     } catch (error) {
       console.error('Error al obtener los pedidos:', error);
       throw error;
