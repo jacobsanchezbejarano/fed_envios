@@ -1,4 +1,3 @@
-
 async function enviarPedido(event) {
     event.preventDefault(); // Previene el comportamiento predeterminado del formulario
   
