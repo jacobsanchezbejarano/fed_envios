@@ -18,6 +18,7 @@ async function enviarPedido(event) {
       }
   
       console.log('Datos enviados exitosamente:', await response.json());
+      alert('Datos enviados exitosamente');
     } catch (error) {
       console.error('Error al enviar los datos a la API:', error);
     }
