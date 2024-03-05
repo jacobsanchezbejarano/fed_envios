@@ -64,7 +64,7 @@ async function enviarPedido(event) {
     pedidos.forEach(pedido => {
       const fila = cuerpo.insertRow();
       for (const key in pedido) {
-        const celda = fila.insertCell();
+        
         switch(key) {
             case 'pedido_celular':
             case 'pedido_nombre':
@@ -75,6 +75,7 @@ async function enviarPedido(event) {
             case 'pedido_zona':
             case 'pedido_comentarios':
             case 'pedido_vendedor':
+                const celda = fila.insertCell();
                 celda.textContent = pedido[key];
                 break;
             default:

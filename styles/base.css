@@ -101,7 +101,7 @@ input[type="text"] {
   border-radius: 4px;
 }
 
-button[type="submit"] {
+button[type="button"] {
   display: block;
   width: 100%;
   padding: 10px;
@@ -114,4 +114,27 @@ button[type="submit"] {
 
 button[type="submit"]:hover {
   background-color: #0056b3;
+}
+
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  background-color: #f1f1f1;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Estilo para la opción por defecto */
+option {
+  color: #333;
+}
+
+/* Estilo para las opciones al pasar el mouse */
+option:hover {
+  background-color: #f1f1f1;
 }
