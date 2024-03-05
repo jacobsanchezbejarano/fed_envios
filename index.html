@@ -8,47 +8,70 @@
     <link rel="stylesheet" href="styles/base.css">
 </head>
 <body>
-    <h1>Order Form</h1>
-    <form id="orderForm">
-        <label for="pedido_id">Pedido ID:</label>
-        <input type="text" id="pedido_id" name="pedido_id" required><br>
-
-        <input type="hidden" id="pedido_latitud" name="pedido_latitud" required>
-
-        <input type="hidden" id="pedido_longitud" name="pedido_longitud" required>
-
-        <!-- <label for="pedido_pais">País:</label> -->
-        <input type="hidden" id="pedido_pais" name="pedido_pais" required><br>
-
-        <!-- <label for="pedido_ciudad">Ciudad:</label> -->
-        <input type="hidden" id="pedido_ciudad" name="pedido_ciudad" required><br>
-
-        <!-- <label for="pedido_celular">Celular:</label> -->
-        <input type="hidden" id="pedido_celular" name="pedido_celular" required><br>
-
-        <div id="map"></div>
-
-        <button type="button" id="submitBtn">Submit</button>
-    </form>
-
-    <!-- Modal de éxito -->
-    <div id="successModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeSuccessModal">&times;</span>
-            <h2>Éxito</h2>
-            <p>¡El formulario se ha enviado con éxito!</p>
-        </div>
-    </div>
-
-    <!-- Modal de fallo -->
-    <div id="errorModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeErrorModal">&times;</span>
-            <h2>Error</h2>
-            <p>Ha ocurrido un error al enviar el formulario.</p>
-        </div>
-    </div>
-
+    <h1>Lista de Pedidos</h1>
+    <div class="container">
+        <h2>Formulario de Pedido</h2>
+        <form id="pedidoForm">
+          <div class="form-group">
+            <label for="pedido_id">ID del Pedido:</label>
+            <input type="text" id="pedido_id" name="pedido_id" value="" required>
+          </div>
+          <div class="form-group">
+            <label for="pedido_latitud">Latitud:</label>
+            <input type="text" id="pedido_latitud" name="pedido_latitud" value="-17.77871073951312" required>
+          </div>
+          <div class="form-group">
+            <label for="pedido_longitud">Longitud:</label>
+            <input type="text" id="pedido_longitud" name="pedido_longitud" value="-63.183472859962734" required>
+          </div>
+          <div class="form-group">
+            <label for="pedido_pais">País:</label>
+            <input type="text" id="pedido_pais" name="pedido_pais" value="Bolivia" required>
+          </div>
+          <div class="form-group">
+            <label for="pedido_ciudad">Ciudad:</label>
+            <input type="text" id="pedido_ciudad" name="pedido_ciudad" value="Santa Cruz" required>
+          </div>
+          <div class="form-group">
+            <label for="pedido_celular">Celular:</label>
+            <input type="text" id="pedido_celular" name="pedido_celular" value="77858921" required>
+          </div>
+          <div class="form-group">
+            <label for="pedido_nombre">Nombre:</label>
+            <input type="text" id="pedido_nombre" name="pedido_nombre" value="">
+          </div>
+          <div class="form-group">
+            <label for="pedido_cantidad">Cantidad:</label>
+            <input type="text" id="pedido_cantidad" name="pedido_cantidad" value="">
+          </div>
+          <div class="form-group">
+            <label for="pedido_estado">Estado:</label>
+            <input type="text" id="pedido_estado" name="pedido_estado" value="">
+          </div>
+          <div class="form-group">
+            <label for="pedido_tipo">Tipo:</label>
+            <input type="text" id="pedido_tipo" name="pedido_tipo" value="">
+          </div>
+          <div class="form-group">
+            <label for="pedido_hora_entrega">Hora de Entrega:</label>
+            <input type="text" id="pedido_hora_entrega" name="pedido_hora_entrega" value="">
+          </div>
+          <div class="form-group">
+            <label for="pedido_zona">Zona:</label>
+            <input type="text" id="pedido_zona" name="pedido_zona" value="">
+          </div>
+          <div class="form-group">
+            <label for="pedido_comentarios">Comentarios:</label>
+            <input type="text" id="pedido_comentarios" name="pedido_comentarios" value="">
+          </div>
+          <div class="form-group">
+            <label for="pedido_vendedor">Vendedor:</label>
+            <input type="text" id="pedido_vendedor" name="pedido_vendedor" value="">
+          </div>
+    
+          <button type="button">Enviar Pedido</button>
+        </form>
+      </div>
 
 
     <script src="scripts/api_pedidos.js"></script>
