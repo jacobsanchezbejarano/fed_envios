@@ -30,17 +30,8 @@ async function enviarPedido(event) {
         throw new Error('Error al obtener los pedidos.');
       }
       const data = await response.json();
-      return {
-        pedido_celular: data.pedido_celular,
-        pedido_nombre: data.pedido_nombre,
-        pedido_cantidad: data.pedido_cantidad,
-        pedido_estado: data.pedido_estado,
-        pedido_tipo: data.pedido_tipo,
-        pedido_hora_entrega: data.pedido_hora_entrega,
-        pedido_zona: data.pedido_zona,
-        pedido_comentarios: data.pedido_comentarios,
-        pedido_vendedor: data.pedido_vendedor,
-      };
+      return data;
+
     } catch (error) {
       console.error('Error al obtener los pedidos:', error);
       throw error;
@@ -52,7 +43,19 @@ async function enviarPedido(event) {
     const tabla = document.createElement('table');
     const encabezado = tabla.createTHead();
     const filaEncabezado = encabezado.insertRow();
-    for (const key in pedidos[0]) {
+    
+    var header_pedidos = [
+      "Celular",
+      "Nombre",
+      "Cantidad",
+      "Estado Pedido",
+      "Tipo de Pedido",
+      "Hora entrega",
+      "Zona",
+      "Comentarios",
+      "Vendedor",
+    ];
+    for (const key of header_pedidos) {
       const th = document.createElement('th');
       th.textContent = key;
       filaEncabezado.appendChild(th);
@@ -62,10 +65,26 @@ async function enviarPedido(event) {
       const fila = cuerpo.insertRow();
       for (const key in pedido) {
         const celda = fila.insertCell();
-        celda.textContent = pedido[key];
-      }
+        switch(key) {
+            case 'pedido_celular':
+            case 'pedido_nombre':
+            case 'pedido_cantidad':
+            case 'pedido_estado':
+            case 'pedido_tipo':
+            case 'pedido_hora_entrega':
+            case 'pedido_zona':
+            case 'pedido_comentarios':
+            case 'pedido_vendedor':
+                celda.textContent = pedido[key];
+                break;
+            default:
+                // No hacer nada o manejar otros casos si es necesario
+                break;
+        }
+    }
+    
     });
-    document.body.appendChild(tabla);
+    document.getElementById("lista_pedidos").appendChild(tabla);
   }
   
 

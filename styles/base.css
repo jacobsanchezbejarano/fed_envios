@@ -1,7 +1,7 @@
 /* Style the map container */
-#map {
-    height: 1000px!important;
-    width: 100%;
+#map { /* Establecer un tamaño para el mapa */
+  height: 400px;
+  width: 100%;
 }
 
 /* Estilo para los modales */
