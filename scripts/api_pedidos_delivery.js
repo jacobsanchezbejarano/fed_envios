@@ -76,18 +76,25 @@ function dibujarTabla(pedidos) {
         celda.appendChild(link);
     }
       
-      // Agregar botón "Marcar entregado" y manejar su clic
-      const celdaBoton = fila.insertCell();
-      const boton = document.createElement('button');
-      boton.textContent = 'Marcar entregado';
-      boton.addEventListener('click', function() {
-          // Mostrar mensaje de confirmación
-          const confirmacion = confirm('¿Desea marcar este pedido como entregado?');
-          if (confirmacion) {
-              marcarComoEntregado(pedido._id);
-          }
-      });
-      celdaBoton.appendChild(boton);
+      if(pedido.pedido_estado != 'Pagado/Entregado') {
+        // Agregar botón "Marcar entregado" y manejar su clic
+        const celdaBoton = fila.insertCell();
+        const boton = document.createElement('button');
+        boton.textContent = 'Marcar entregado';
+        boton.addEventListener('click', function() {
+            // Mostrar mensaje de confirmación
+            const confirmacion = confirm('¿Desea marcar este pedido como entregado?');
+            if (confirmacion) {
+                marcarComoEntregado(pedido._id);
+            }
+        });
+        celdaBoton.appendChild(boton);
+      }else{
+        const celdaBoton = fila.insertCell();
+        const boton = document.createElement('p');
+        boton.textContent = 'ENTREGADO';
+        celdaBoton.appendChild(boton);
+      }
   });
   
     document.getElementById("lista_pedidos").appendChild(tabla);
