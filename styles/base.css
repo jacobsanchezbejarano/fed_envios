@@ -8,6 +8,10 @@ td, th {
   padding: 8px;
 }
 
+#lista_pedidos {
+  max-width: 1200px;
+}
+
 /* Estilo para los modales */
 .modal {
     display: none;
