@@ -19,8 +19,7 @@ async function enviarPedido(event) {
   
       console.log('Datos enviados exitosamente:', await response.json());
       alert('Datos enviados exitosamente');
-      document.getElementById("pedidoForm").reset();
-      map.setView([defaultLat, defaultLng], 13);
+      location.reload();
     } catch (error) {
       console.error('Error al enviar los datos a la API:', error);
     }
