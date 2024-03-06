@@ -100,7 +100,7 @@ async function marcarComoEntregado(idPedido) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ estado: 'Pagado/Entregado' }) // Estado a actualizar
+            body: JSON.stringify({ pedido_estado: 'Pagado/Entregado' }) // Estado a actualizar
         });
         if (!response.ok) {
             throw new Error('Error al marcar como entregado.');
