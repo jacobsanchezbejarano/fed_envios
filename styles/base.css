@@ -4,6 +4,10 @@
   width: 100%;
 }
 
+td, th {
+  padding: 8px;
+}
+
 /* Estilo para los modales */
 .modal {
     display: none;

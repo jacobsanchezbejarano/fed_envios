@@ -67,36 +67,42 @@ async function enviarPedido(event) {
     pedidos.forEach(pedido => {
       const fila = cuerpo.insertRow();
       for (const key in pedido) {
-        switch(key) {
-            case 'pedido_celular':
-            case 'pedido_nombre':
-            case 'pedido_cantidad':
-            case 'pedido_estado':
-            case 'pedido_tipo':
-            case 'pedido_hora_entrega':
-            case 'pedido_zona':
-            case 'pedido_comentarios':
-            case 'pedido_vendedor':
-                const celda = fila.insertCell();
-                celda.textContent = pedido[key];
-                break;
-            default:
-                // No hacer nada o manejar otros casos si es necesario
-                break;
-        }
-    }
-    
-    // Después del bucle, agregar el enlace al final si corresponde
-    if (pedido.pedido_latitud !== '') {
-        var link = document.createElement('a');
-        link.href = 'https://www.google.com/maps/place/' + pedido.pedido_latitud + ',' + pedido.pedido_longitud;
-        link.target = '_blank';
-        link.textContent = 'Ir a mapa';
-        const celda = fila.insertCell();
-        celda.appendChild(link);
-    }
-    
-    });
+          switch (key) {
+              case 'pedido_celular':
+                  const celda = fila.insertCell();
+                  const enlace = document.createElement('a');
+                  enlace.href = 'https://wa.me/591' + pedido[key]; // Enlace de WhatsApp con el número de celular
+                  enlace.textContent = pedido[key];
+                  celda.appendChild(enlace);
+                  break;
+              case 'pedido_nombre':
+              case 'pedido_cantidad':
+              case 'pedido_estado':
+              case 'pedido_tipo':
+              case 'pedido_hora_entrega':
+              case 'pedido_zona':
+              case 'pedido_comentarios':
+              case 'pedido_vendedor':
+                  const celdaNormal = fila.insertCell();
+                  celdaNormal.textContent = pedido[key];
+                  break;
+              default:
+                  // No hacer nada o manejar otros casos si es necesario
+                  break;
+          }
+      }
+  
+      // Después del bucle, agregar el enlace al final si corresponde
+      if (pedido.pedido_latitud !== '') {
+          var link = document.createElement('a');
+          link.href = 'https://www.google.com/maps/place/' + pedido.pedido_latitud + ',' + pedido.pedido_longitud;
+          link.target = '_blank';
+          link.textContent = 'Ir a mapa';
+          const celda = fila.insertCell();
+          celda.appendChild(link);
+      }
+  });
+  
     document.getElementById("lista_pedidos").appendChild(tabla);
   }
   
