@@ -10,6 +10,7 @@ td, th {
 
 #lista_pedidos {
   max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* Estilo para los modales */
