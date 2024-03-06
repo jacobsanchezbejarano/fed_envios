@@ -95,7 +95,7 @@ function dibujarTabla(pedidos) {
 
 async function marcarComoEntregado(idPedido) {
     try {
-        const response = await fetch(`https://envios-26fg.onrender.com/pedidos/${idPedido}`, {
+        const response = await fetch(`https://envios-26fg.onrender.com/pedidos/estado/${idPedido}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
