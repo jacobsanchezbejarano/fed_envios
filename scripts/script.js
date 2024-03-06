@@ -66,7 +66,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 get_pedidos_pendientes(map);
 
-let restaurant_location = {"lat": -17.757198187751786,"lng":-63.168725967407234};
+let restaurant_location = {"lat": -17.7457066,"lng":-63.1517563};
 
 var marker;
 var restaurant_marker;
