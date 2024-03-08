@@ -76,7 +76,7 @@ var restaurant_marker;
 
 restaurant_marker = L.marker(restaurant_location, { icon: restaurantIcon }).
 addTo(map)
-.bindPopup('<a target="_blank" href="https://www.google.com/maps/place/' + ubicacion.pedido_latitud + ',' + ubicacion.pedido_longitud + '">Local</a>');
+.bindPopup('<a target="_blank" href="https://www.google.com/maps/place/' + restaurant_location.lat + ',' + restaurant_location.lng + '">Local</a>');
 
 // Listen for a click event on the map
 map.on('click', function(e) {
