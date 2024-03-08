@@ -1,6 +1,6 @@
 /* Style the map container */
 #map { /* Establecer un tamaño para el mapa */
-  height: 400px;
+  height: 100vh;
   width: 100%;
 }
 

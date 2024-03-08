@@ -1,6 +1,6 @@
 #map {
   /* Establecer un tamaño predeterminado para el mapa */
-  height: 750px;
+  height: 100vh;
   width: 100%;
 }
 
