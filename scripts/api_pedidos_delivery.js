@@ -97,7 +97,7 @@ function dibujarTabla(pedidos) {
       }
   });
   
-    document.getElementById("lista_pedidos").appendChild(tabla);
+    document.getElementById("no-more-tables").appendChild(tabla);
 }
 
 async function marcarComoEntregado(idPedido) {
