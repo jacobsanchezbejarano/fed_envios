@@ -108,14 +108,14 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 get_pedidos_pendientes(map, delivery);
 
-let restaurant_location = {"lat": -17.7457066,"lng":-63.1517563};
+let restaurant_location = {"lat": -17.745771614638134,"lng":-63.14899362623692};
 
 var marker;
 var restaurant_marker;
 
 restaurant_marker = L.marker(restaurant_location, { icon: restaurantIcon }).
 addTo(map)
-.bindPopup('<a target="_blank" href="https://www.google.com/maps/place/' + ubicacion.pedido_latitud + ',' + ubicacion.pedido_longitud + '">Local</a>');
+.bindPopup('<a target="_blank" href="https://www.google.com/maps/place/' + restaurant_location.lat + ',' + restaurant_location.lng + '">Local</a>');
 
 // Listen for a click event on the map
 map.on('click', function(e) {
