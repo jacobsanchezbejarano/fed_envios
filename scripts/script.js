@@ -28,7 +28,9 @@ function get_pedidos_pendientes(map) {
                 // Crea y agrega el marcador al mapa con el ícono personalizado
                 var marker = L.marker([ubicacion.pedido_latitud, ubicacion.pedido_longitud], { icon: customIcon })
                     .addTo(map)
-                    .bindPopup('<a target="_blank" href="https://www.google.com/maps/place/' + ubicacion.pedido_latitud + ',' + ubicacion.pedido_longitud + '">Pedido: ' + ubicacion.pedido_nombre + ' <br>Hora: '+ ubicacion.pedido_hora_entrega + '<br>Cantidad: '+ ubicacion.pedido_cantidad + '<br>Estado: '+ ubicacion.pedido_estado + '</a>');
+                    .bindPopup('<a class="btn" target="_blank" href="https://www.google.com/maps/place/' + ubicacion.pedido_latitud + ',' + ubicacion.pedido_longitud + '"><button style="background-color:#007bff; color:white">Navegar en maps</button></a><br>Pedido: ' + ubicacion.pedido_nombre + ' <br>Hora: '+ ubicacion.pedido_hora_entrega + '<br>Cantidad: '+ ubicacion.pedido_cantidad + '<br>Estado: '+ ubicacion.pedido_estado + ''+
+                    '<br><a target="_blank" href="https://wa.me/591'+ ubicacion.pedido_celular+'"><button style="background-color:#25d366; color:#666">Celular: '+ ubicacion.pedido_celular+'</button></a>'
+                    );
             });
 
             // Itera sobre los datos y agrega marcadores al mapa
