@@ -1,9 +1,10 @@
 const urlParams = new URLSearchParams(window.location.search);
 const delivery = urlParams.get('delivery'); // Devuelve 'valor1'
+const API_URL = true ? "http://localhost:3000" : 'https://envios-26fg.onrender.com';
 
 async function obtenerPedidosPorDelivery(deliveryId) {
     try {
-        const response = await fetch(`https://envios-26fg.onrender.com/pedidos/delivery/${deliveryId}`);
+        const response = await fetch(`${API_URL}/pedidos/delivery/${deliveryId}`);
         if (!response.ok) {
             throw new Error('Error al obtener los pedidos.');
         }
@@ -102,7 +103,7 @@ function dibujarTabla(pedidos) {
 
 async function marcarComoEntregado(idPedido) {
     try {
-        const response = await fetch(`https://envios-26fg.onrender.com/pedidos/estado/${idPedido}`, {
+        const response = await fetch(`${API_URL}/pedidos/estado/${idPedido}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -112,6 +113,7 @@ async function marcarComoEntregado(idPedido) {
         if (!response.ok) {
             throw new Error('Error al marcar como entregado.');
         }
+        window.location.reload(); // Recargar la página para reflejar los cambios
         // Refrescar la tabla o actualizar los datos si es necesario
         // Por ejemplo, puedes volver a obtener los pedidos y volver a dibujar la tabla
     } catch (error) {

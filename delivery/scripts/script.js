@@ -1,12 +1,13 @@
 // Initialize the map
 const urlParams = new URLSearchParams(window.location.search);
 const delivery = urlParams.get('delivery').toLowerCase();
+const API_URL = true ? "http://localhost:3000" : 'https://envios-26fg.onrender.com';
 
 var map = L.map('map').setView([-17.77871073951463, -63.183472859962734], 13);
 
 
 function get_pedidos_pendientes(map, deliveryId) {
-    var apiURL = `https://envios-26fg.onrender.com/pedidos/delivery/${deliveryId}`;
+    var apiURL = `${API_URL}/pedidos/delivery/${deliveryId}`;
     fetch(apiURL)
         .then(response => {
             if (!response.ok) {
@@ -64,7 +65,7 @@ function confirmarEntrega(pedido_id) {
 
 async function marcarComoEntregado(idPedido) {
     try {
-        const response = await fetch(`https://envios-26fg.onrender.com/pedidos/estado/${idPedido}`, {
+        const response = await fetch(`${API_URL}/pedidos/estado/${idPedido}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
