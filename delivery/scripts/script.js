@@ -8,7 +8,15 @@ var map = L.map('map').setView([-17.77871073951463, -63.183472859962734], 13);
 
 function get_pedidos_pendientes(map, deliveryId) {
     var apiURL = `${API_URL}/pedidos/delivery/${deliveryId}`;
-    fetch(apiURL)
+    fetch(apiURL,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "x-api-key": obtenerApiKey()
+            }
+        }
+    )
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error en la solicitud a la API');
@@ -22,7 +30,7 @@ function get_pedidos_pendientes(map, deliveryId) {
             data.forEach(ubicacion => {
                 // Crea un ícono personalizado para cada marcador
                 var customIcon = L.icon({
-                    iconUrl: 'https://cdn.icon-icons.com/icons2/1206/PNG/512/1491254387-pindestinationmaplocation_82942.png',
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png',
                     iconSize: [32, 32],
                     iconAnchor: [16, 32],
                     popupAnchor: [0, -32]
@@ -68,7 +76,8 @@ async function marcarComoEntregado(idPedido) {
         const response = await fetch(`${API_URL}/pedidos/estado/${idPedido}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                "x-api-key": obtenerApiKey()
             },
             body: JSON.stringify({ pedido_estado: 'Pagado/Entregado' }) // Estado a actualizar
         });
@@ -134,65 +143,6 @@ map.on('click', function(e) {
     document.getElementById('pedido_latitud').value = e.latlng.lat;
     document.getElementById('pedido_longitud').value = e.latlng.lng;
 });
-
-// Handle form submission
-// document.getElementById('submitBtn').addEventListener('click', function() {
-//     // Gather form data
-//     var formData = {
-//         pedido_id: document.getElementById('pedido_id').value,
-//         pedido_latitud: document.getElementById('pedido_latitud').value,
-//         pedido_longitud: document.getElementById('pedido_longitud').value,
-//         pedido_pais: document.getElementById('pedido_pais').value,
-//         pedido_ciudad: document.getElementById('pedido_ciudad').value,
-//         pedido_celular: document.getElementById('pedido_celular').value,
-//     };
-
-//     if(formData.pedido_id == "" || formData.pedido_latitud == "" || formData.pedido_longitud == "") {
-//         document.getElementById('errorModal').style.display = 'block';
-//         return;
-//     }
-
-//     fetch('https://envios-26fg.onrender.com/pedidos/', {
-//         method: 'POST',
-//         body: JSON.stringify(formData),
-//         headers: {
-//             'Content-Type': 'application/json'
-//         }
-//     })
-//     .then(response => response.json())
-//     .then(data => {
-//         console.log(data);
-//         if (data.acknowledged === true) {
-//             // Show the success modal
-//             document.getElementById('successModal').style.display = 'block';
-
-//             // Clear the form
-//             document.getElementById('pedido_id').value = '';
-//             document.getElementById('pedido_latitud').value = '';
-//             document.getElementById('pedido_longitud').value = '';
-//             document.getElementById('pedido_pais').value = '';
-//             document.getElementById('pedido_ciudad').value = '';
-//             document.getElementById('pedido_celular').value = '';
-//         } else {
-//             // Show the error modal
-//             document.getElementById('errorModal').style.display = 'block';
-//         }
-//     })
-//     .catch(error => {
-//         console.error('Error:', error);
-//         // Show the error modal in case of a network error
-//         document.getElementById('errorModal').style.display = 'block';
-//     });
-// });
-
-// Cerrar los modales cuando se haga clic en la "x"
-// document.getElementById('closeSuccessModal').addEventListener('click', function() {
-//     document.getElementById('successModal').style.display = 'none';
-// });
-
-// document.getElementById('closeErrorModal').addEventListener('click', function() {
-//     document.getElementById('errorModal').style.display = 'none';
-// });
 
 
 function moveMarker(newLat,newLng) {

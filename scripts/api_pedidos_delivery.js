@@ -4,7 +4,15 @@ const API_URL = true ? "http://localhost:3000" : 'https://envios-26fg.onrender.c
 
 async function obtenerPedidosPorDelivery(deliveryId) {
     try {
-        const response = await fetch(`${API_URL}/pedidos/delivery/${deliveryId}`);
+        const response = await fetch(`${API_URL}/pedidos/delivery/${deliveryId}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "x-api-key": obtenerApiKey()
+                },
+            }
+        );
         if (!response.ok) {
             throw new Error('Error al obtener los pedidos.');
         }
@@ -106,7 +114,8 @@ async function marcarComoEntregado(idPedido) {
         const response = await fetch(`${API_URL}/pedidos/estado/${idPedido}`, {
             method: 'PUT',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                "x-api-key": obtenerApiKey()
             },
             body: JSON.stringify({ pedido_estado: 'Pagado/Entregado' }) // Estado a actualizar
         });

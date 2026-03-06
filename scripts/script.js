@@ -5,7 +5,15 @@ const API_URL = true ? "http://localhost:3000" : 'https://envios-26fg.onrender.c
 function get_pedidos_pendientes(map) {
     var apiURL = `${API_URL}/pedidos`;
 
-    fetch(apiURL)
+    fetch(apiURL,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "x-api-key": obtenerApiKey()
+            },
+        }
+    )
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error en la solicitud a la API');

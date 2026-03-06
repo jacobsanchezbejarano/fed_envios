@@ -20,7 +20,9 @@ async function enviarPedido(event) {
     try {
       const response = await fetch(`${API_URL}/pedidos`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+        },
         body: JSON.stringify(data)
       });
 
@@ -41,7 +43,15 @@ async function enviarPedido(event) {
 // =============================
 async function obtenerPedidos() {
     try {
-      const response = await fetch(`${API_URL}/pedidos`);
+      const response = await fetch(`${API_URL}/pedidos`,
+        {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                "x-api-key": obtenerApiKey()
+            },
+        }
+      );
       if (!response.ok) {
         throw new Error('Error al obtener los pedidos.');
       }
@@ -63,7 +73,10 @@ async function asignarDelivery(idPedido, deliveryId, selectElement) {
 
         const response = await fetch(`${API_URL}/pedidos/delivery/${idPedido}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                "x-api-key": obtenerApiKey()
+            },
             body: JSON.stringify({ delivery: deliveryId })
         });
 
