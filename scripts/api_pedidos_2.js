@@ -129,6 +129,11 @@ function mostrarPedidosEnMapa(pedidos) {
 
     const deliveryFilter = getDeliveryFilter();
 
+    const ahora = new Date();
+    const limite = new Date(ahora.getTime() + (2 * 60 * 60 * 1000));
+
+    let pedidosFuturosCount = 0;
+
     pedidos.forEach(pedido => {
 
         if (!pedido.pedido_latitud || !pedido.pedido_longitud) return;
@@ -137,6 +142,18 @@ function mostrarPedidosEnMapa(pedidos) {
         if (pedido.pedido_tipo && pedido.pedido_tipo.toUpperCase() === "EN LUGAR") return;
 
         if (deliveryFilter && pedido.delivery !== deliveryFilter) return;
+
+        if (!pedido.pedido_hora_entrega) return;
+
+        const [h, m] = pedido.pedido_hora_entrega.split(":");
+        const horaPedido = new Date();
+        horaPedido.setHours(h, m, 0, 0);
+
+        // CONTAR pedidos para más tarde
+        if (horaPedido > limite) {
+            pedidosFuturosCount++;
+            return;
+        }
 
         let color = obtenerColorDelivery(pedido.delivery);
 
@@ -158,6 +175,29 @@ function mostrarPedidosEnMapa(pedidos) {
         markersLayer.addLayer(marker);
 
     });
+
+    // Mostrar rango visible
+    const desde = ahora.toTimeString().slice(0,5);
+    const hasta = limite.toTimeString().slice(0,5);
+
+    let info = document.getElementById("mapInfo");
+
+    if (!info) {
+        info = document.createElement("div");
+        info.id = "mapInfo";
+        info.style.padding = "10px";
+        info.style.background = "#fff";
+        info.style.borderBottom = "1px solid #ddd";
+        info.style.fontSize = "14px";
+        info.style.fontWeight = "600";
+        document.body.prepend(info);
+    }
+
+    info.innerHTML = `
+    Mostrando pedidos desde <b>${desde}</b> hasta <b>${hasta}</b><br>
+    (Incluye todos los pedidos pasados)<br>
+    Pedidos para más tarde: <b>${pedidosFuturosCount}</b>
+    `;
 
 }
 
