@@ -2,7 +2,10 @@ const API_URL = true ? "http://localhost:3000" : 'https://envios-26fg.onrender.c
 
 // Lista predeterminada de deliveries
 const deliveriesDisponibles = [
-  { id: "Josema", nombre: "Josema" },
+  { id: "josema", nombre: "Josema" },
+  { id: "niki", nombre: "Niki" },
+  { id: "dayana", nombre: "Dayana" },
+  { id: "rolando", nombre: "Rolando" },
 ];
 
 // =============================
@@ -175,7 +178,7 @@ function dibujarTabla(pedidos) {
             option.value = delivery.id;
             option.textContent = delivery.nombre;
 
-            if (pedido.delivery_id == delivery.id) {
+            if (pedido.delivery == delivery.id) {
                 option.selected = true;
             }
 
