@@ -28,9 +28,17 @@ function get_pedidos_pendientes(map, deliveryId) {
 
 
             data.forEach(ubicacion => {
+
+                // CAMBIO: icono verde si está entregado
+                let iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png';
+
+                if (ubicacion.pedido_estado === 'Pagado/Entregado') {
+                    iconUrl = 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png';
+                }
+
                 // Crea un ícono personalizado para cada marcador
                 var customIcon = L.icon({
-                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-black.png',
+                    iconUrl: iconUrl,
                     iconSize: [32, 32],
                     iconAnchor: [16, 32],
                     popupAnchor: [0, -32]

@@ -18,7 +18,7 @@ if(mapa){
 const deliveriesDisponibles = [
   { id: "josema", nombre: "Josema", color: "red" },
   { id: "niki", nombre: "Niki", color: "blue" },
-  { id: "dayana", nombre: "Dayana", color: "green" },
+  { id: "dayana", nombre: "Dayana", color: "yellow" },
   { id: "rolando", nombre: "Rolando", color: "orange" },
 ];
 
@@ -67,19 +67,32 @@ function crearPopupPedido(pedido) {
         </option>`;
     });
 
+    let estadoColor = "black";
+
+    if (pedido.pedido_estado &&
+        pedido.pedido_estado.toLowerCase().includes("entregado")) {
+        estadoColor = "green";
+    }
+
     return `
 
     <div style="min-width:260px">
 
     <h3 style="margin:0">${pedido.pedido_nombre}</h3>
 
-    <b>Hora:</b> ${pedido.pedido_hora_entrega}<br>
+    <div style="font-size:18px;font-weight:bold">
+        ⏰ ${pedido.pedido_hora_entrega}
+    </div>
+
     <b>Cantidad:</b> ${pedido.pedido_cantidad}<br>
     <b>Zona:</b> ${pedido.pedido_zona}<br>
     <b>Tipo:</b> ${pedido.pedido_tipo}<br>
-    <b>Estado:</b> ${pedido.pedido_estado}<br>
 
-    <br>
+    <b style="color:${estadoColor}">
+        Estado: ${pedido.pedido_estado}
+    </b>
+
+    <br><br>
 
     <b>Teléfono:</b><br>
     <a target="_blank" href="https://wa.me/591${pedido.pedido_celular}">
@@ -120,9 +133,18 @@ function mostrarPedidosEnMapa(pedidos) {
 
         if (!pedido.pedido_latitud || !pedido.pedido_longitud) return;
 
+        // NO mostrar pedidos EN LUGAR
+        if (pedido.pedido_tipo && pedido.pedido_tipo.toUpperCase() === "EN LUGAR") return;
+
         if (deliveryFilter && pedido.delivery !== deliveryFilter) return;
 
-        const color = obtenerColorDelivery(pedido.delivery);
+        let color = obtenerColorDelivery(pedido.delivery);
+
+        // ENTREGADOS SIEMPRE VERDE
+        if (pedido.pedido_estado &&
+            pedido.pedido_estado.toLowerCase().includes("entregado")) {
+            color = "green";
+        }
 
         const icon = crearIcono(color);
 

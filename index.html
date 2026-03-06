@@ -1,98 +1,262 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Order Form</title>
-    <!-- Include Leaflet CSS and JavaScript -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="styles/base.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formulario de Pedido</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+font-family: system-ui, -apple-system, Segoe UI, Roboto;
+background:#f6f7fb;
+margin:0;
+padding:20px;
+}
+
+.container{
+max-width:520px;
+margin:auto;
+background:white;
+padding:25px;
+border-radius:14px;
+box-shadow:0 8px 30px rgba(0,0,0,0.08);
+}
+
+h2{
+margin-top:0;
+text-align:center;
+}
+
+#map{
+height:280px;
+border-radius:10px;
+margin-bottom:10px;
+border:1px solid #ddd;
+}
+
+.map-help{
+font-size:13px;
+color:#666;
+margin-bottom:20px;
+text-align:center;
+}
+
+.form-group{
+margin-bottom:16px;
+}
+
+label{
+display:block;
+font-weight:600;
+margin-bottom:6px;
+}
+
+input, select{
+width:100%;
+padding:10px;
+border-radius:8px;
+border:1px solid #ccc;
+font-size:15px;
+transition:all .2s;
+}
+
+input:focus, select:focus{
+border-color:#4CAF50;
+outline:none;
+box-shadow:0 0 0 2px rgba(76,175,80,0.15);
+}
+
+input.error, select.error{
+border-color:#e53935;
+}
+
+.error-message{
+color:#e53935;
+font-size:13px;
+margin-top:4px;
+display:none;
+}
+
+button{
+width:100%;
+padding:14px;
+border:none;
+background:#111;
+color:white;
+font-size:16px;
+font-weight:600;
+border-radius:10px;
+cursor:pointer;
+transition:.2s;
+}
+
+button:hover{
+background:#333;
+}
+
+.required::after{
+content:" *";
+color:#e53935;
+}
+
+.section{
+margin-top:20px;
+padding-top:20px;
+border-top:1px solid #eee;
+}
+
+</style>
 </head>
+
 <body>
-    <div class="container">
-        <h2>Formulario de Pedido</h2>
-        <form id="pedidoForm">
-          <!-- <div class="form-group">
-            <label for="pedido_id">ID del Pedido:</label>
-            <input type="text" id="pedido_id" name="pedido_id" value="" required>
-          </div> -->
-          <div id="map"></div> <!-- Contenedor del mapa -->
 
-          <div class="form-group">
-            <input type="hidden" id="pedido_latitud" name="pedido_latitud" value="" required>
-          </div>
-          <div class="form-group">
-            <input type="hidden" id="pedido_longitud" name="pedido_longitud" value="" required>
-          </div>
-          <!-- <div class="form-group">
-            <label for="pedido_pais">País:</label>
-            <input type="text" id="pedido_pais" name="pedido_pais" value="" required>
-          </div>
-          <div class="form-group">
-            <label for="pedido_ciudad">Ciudad:</label>
-            <input type="text" id="pedido_ciudad" name="pedido_ciudad" value="" required>
-          </div> -->
-          <div class="form-group">
-            <label for="pedido_celular">Celular:</label>
-            <input type="text" id="pedido_celular" name="pedido_celular" value="" required>
-          </div>
-          <div class="form-group">
-            <label for="pedido_nombre">Nombre:</label>
-            <input type="text" id="pedido_nombre" name="pedido_nombre" value="">
-          </div>
-          <div class="form-group">
-            <label for="pedido_cantidad">Cantidad:</label>
-            <input type="text" id="pedido_cantidad" name="pedido_cantidad" value="">
-          </div>
-          <!-- <div class="form-group">
-            <label for="pedido_estado">Estado del Pedido:</label>
-            <select id="pedido_estado" name="pedido_estado">
-              <option value="">SELECCIONAR</option>
-              <option value="ENCARGADO">ENCARGADO</option>
-              <option value="PAGADO">PAGADO</option>
-            </select>
-          </div> -->
-          <div class="form-group">
-            <label for="pedido_tipo">Tipo de Pedido:</label>
-            <select id="pedido_tipo" name="pedido_tipo">
-              <option value="">SELECCIONAR</option>
-              <option value="DELIVERY">DELIVERY</option>
-              <option value="EN LUGAR">EN LUGAR</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="pedido_hora_entrega">Hora de Entrega:</label>
-            <input type="time" id="pedido_hora_entrega" name="pedido_hora_entrega" value="12:00">
-          </div>
-          <div class="form-group">
-            <label for="pedido_zona">Zona:</label>
-            <input type="text" id="pedido_zona" name="pedido_zona" value="">
-          </div>
-          <div class="form-group">
-            <label for="pedido_comentarios">Comentarios:</label>
-            <input type="text" id="pedido_comentarios" name="pedido_comentarios" value="">
-          </div>
-          <div class="form-group">
-            <label for="pedido_vendedor">Vendedor:</label>
-            <select id="pedido_vendedor" name="pedido_vendedor">
-                <option value="">SELECCIONAR</option>
-                <option value="Jacob">Jacob</option>
-                <option value="Gaby">Gaby</option>
-                <option value="Angelica">Angelica</option>
-                <option value="Milena">Milena</option>
-                <option value="Carolina Vaca">Carolina Vaca</option>
-                <option value="Roxana Suarez">Roxana Suarez</option>
-                <option value="Yanine">Yanine</option>
-                <option value="Yanine">Daniel Justiniano</option>
-            </select>
-          </div>
-    
-          <button type="button" onclick="enviarPedido(event)">Enviar Pedido</button>
-        </form>
-      </div>
+<div class="container">
 
+<h2>Nuevo Pedido</h2>
 
-    <script src="scripts/api_pedidos.js"></script>
-    <script src="scripts/utils.js"></script>
+<div class="map-help">
+Toca el mapa para marcar la ubicación del cliente
+</div>
+
+<form id="pedidoForm">
+
+<div id="map"></div>
+
+<input type="hidden" id="pedido_latitud" name="pedido_latitud">
+<input type="hidden" id="pedido_longitud" name="pedido_longitud">
+
+<div class="section">
+
+<div class="form-group">
+<label class="required">Celular</label>
+<input type="tel" id="pedido_celular" name="pedido_celular" placeholder="Ej: 70012345">
+<div class="error-message">Ingrese un celular válido</div>
+</div>
+
+<div class="form-group">
+<label class="required">Nombre</label>
+<input type="text" id="pedido_nombre" name="pedido_nombre" placeholder="Nombre del cliente">
+<div class="error-message">Este campo es obligatorio</div>
+</div>
+
+<div class="form-group">
+<label class="required">Cantidad</label>
+<input type="number" id="pedido_cantidad" name="pedido_cantidad" placeholder="Ej: 2">
+<div class="error-message">Ingrese una cantidad</div>
+</div>
+
+<div class="form-group">
+<label class="required">Tipo de Pedido</label>
+<select id="pedido_tipo" name="pedido_tipo">
+<option value="">Seleccionar</option>
+<option value="DELIVERY">Delivery</option>
+<option value="EN LUGAR">En Lugar</option>
+</select>
+<div class="error-message">Seleccione un tipo</div>
+</div>
+
+<div class="form-group">
+<label class="required">Hora de Entrega</label>
+<input type="time" id="pedido_hora_entrega" name="pedido_hora_entrega" value="12:00">
+<div class="error-message">Seleccione una hora</div>
+</div>
+
+<div class="form-group">
+<label class="required">Zona</label>
+<input type="text" id="pedido_zona" name="pedido_zona" placeholder="Ej: Equipetrol">
+<div class="error-message">Ingrese la zona</div>
+</div>
+
+<div class="form-group">
+<label>Comentarios</label>
+<input type="text" id="pedido_comentarios" name="pedido_comentarios" placeholder="Opcional">
+</div>
+
+<div class="form-group">
+<label class="required">Vendedor</label>
+<input type="text" id="pedido_vendedor" name="pedido_vendedor" placeholder="Nombre del vendedor">
+<div class="error-message">Ingrese el vendedor</div>
+</div>
+
+</div>
+
+<button type="button" onclick="validarYEnviar(event)">
+Enviar Pedido
+</button>
+
+</form>
+
+</div>
+
+<script>
+
+function validarYEnviar(event){
+
+const form=document.getElementById("pedidoForm")
+let valido=true
+
+const requiredFields=[
+"pedido_latitud",
+"pedido_longitud",
+"pedido_celular",
+"pedido_nombre",
+"pedido_cantidad",
+"pedido_tipo",
+"pedido_hora_entrega",
+"pedido_zona",
+"pedido_vendedor"
+]
+
+requiredFields.forEach(id=>{
+
+const input=document.getElementById(id)
+
+if(!input.value){
+
+valido=false
+
+if(input.type!=="hidden"){
+input.classList.add("error")
+input.nextElementSibling.style.display="block"
+}
+
+}
+
+else{
+
+if(input.type!=="hidden"){
+input.classList.remove("error")
+if(input.nextElementSibling) input.nextElementSibling.style.display="none"
+}
+
+}
+
+})
+
+if(!valido){
+
+if(!document.getElementById("pedido_latitud").value){
+
+alert("Debes seleccionar la ubicación del pedido en el mapa")
+
+}
+
+return
+
+}
+
+enviarPedido(event)
+
+}
+
+</script>
+
+<script src="scripts/api_pedidos.js"></script>
+<script src="scripts/utils.js"></script>
+
 </body>
 </html>

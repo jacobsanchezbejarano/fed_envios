@@ -1,5 +1,5 @@
 // Initialize the map
-var map = L.map('map').setView([-17.77871073951463, -63.183472859962734], 13);
+// var map = L.map('map').setView([-17.77871073951463, -63.183472859962734], 13);
 const API_URL = true ? "http://localhost:3000" : 'https://envios-26fg.onrender.com';
 
 function get_pedidos_pendientes(map) {
@@ -72,12 +72,12 @@ var restaurantIcon = L.icon({
 });
 
 // Add a tile layer to the map (you can change the tile layer URL)
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-}).addTo(map);
+// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//     maxZoom: 19,
+// }).addTo(map);
 
 
-get_pedidos_pendientes(map);
+// get_pedidos_pendientes(map);
 
 let restaurant_location = {"lat": -17.745771614638134,"lng":-63.14899362623692};
 
@@ -85,25 +85,25 @@ let restaurant_location = {"lat": -17.745771614638134,"lng":-63.14899362623692};
 var marker;
 var restaurant_marker;
 
-restaurant_marker = L.marker(restaurant_location, { icon: restaurantIcon }).
-addTo(map)
-.bindPopup('<a target="_blank" href="https://www.google.com/maps/place/' + restaurant_location.lat + ',' + restaurant_location.lng + '">Local</a>');
+// restaurant_marker = L.marker(restaurant_location, { icon: restaurantIcon }).
+// addTo(map)
+// .bindPopup('<a target="_blank" href="https://www.google.com/maps/place/' + restaurant_location.lat + ',' + restaurant_location.lng + '">Local</a>');
 
 // Listen for a click event on the map
-map.on('click', function(e) {
-    if (marker) {
-        // If a marker already exists, remove it
-        map.removeLayer(marker);
-    }
+// map.on('click', function(e) {
+//     if (marker) {
+//         // If a marker already exists, remove it
+//         map.removeLayer(marker);
+//     }
 
-    // Create a marker at the clicked location
-    marker = L.marker(e.latlng, { icon: customIcon }).addTo(map);
+//     // Create a marker at the clicked location
+//     marker = L.marker(e.latlng, { icon: customIcon }).addTo(map);
 
 
-    // Update the latitude and longitude input fields
-    document.getElementById('pedido_latitud').value = e.latlng.lat;
-    document.getElementById('pedido_longitud').value = e.latlng.lng;
-});
+//     // Update the latitude and longitude input fields
+//     document.getElementById('pedido_latitud').value = e.latlng.lat;
+//     document.getElementById('pedido_longitud').value = e.latlng.lng;
+// });
 
 // Handle form submission
 // document.getElementById('submitBtn').addEventListener('click', function() {

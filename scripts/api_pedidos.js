@@ -14,7 +14,19 @@ const deliveriesDisponibles = [
 async function enviarPedido(event) {
     event.preventDefault();
 
-    const formData = new FormData(document.getElementById("pedidoForm"));
+    const form = document.getElementById("pedidoForm");
+    const formData = new FormData(form);
+
+    for (const [key, value] of formData.entries()) {
+
+        if (key === "pedido_comentarios") continue;
+
+        if (!value || value.trim() === "") {
+            alert("Todos los campos son obligatorios excepto comentarios.");
+            return;
+        }
+    }
+
     const data = Object.fromEntries(formData.entries());
 
     try {
