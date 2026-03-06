@@ -1,6 +1,6 @@
 // Initialize the map
 // var map = L.map('map').setView([-17.77871073951463, -63.183472859962734], 13);
-const API_URL = true ? "http://localhost:3000" : 'https://envios-26fg.onrender.com';
+const API_URL = false ? "http://localhost:3000" : 'https://envios-6wpy.onrender.com';
 
 function get_pedidos_pendientes(map) {
     var apiURL = `${API_URL}/pedidos`;
@@ -122,7 +122,7 @@ var restaurant_marker;
 //         return;
 //     }
 
-//     fetch('https://envios-26fg.onrender.com/pedidos/', {
+//     fetch('https://envios-6wpy.onrender.com/pedidos/', {
 //         method: 'POST',
 //         body: JSON.stringify(formData),
 //         headers: {
