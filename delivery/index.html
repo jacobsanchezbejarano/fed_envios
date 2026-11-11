@@ -1,20 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Order Form</title>
-    <!-- Include Leaflet CSS and JavaScript -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="../styles/base.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
-    <script src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7fb">
+  <title>Pedidos asignados</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#172033;background:#f4f7fb;font-synthesis:none}*{box-sizing:border-box}body{margin:0}.page{max-width:940px;margin:0 auto;padding:28px 20px 48px}.header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:8px 0 22px}.brand{display:flex;align-items:center;gap:12px}.brand-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:#e9efff;color:#3158c9;font-size:23px}.eyebrow{margin:0 0 4px;color:#657188;font-size:13px;font-weight:650;letter-spacing:.04em;text-transform:uppercase}.header h1{margin:0;font-size:clamp(24px,5vw,34px);line-height:1.15;letter-spacing:-.03em}.summary{padding:9px 13px;border:1px solid #e1e6ef;border-radius:999px;background:white;color:#4a5870;font-size:14px;white-space:nowrap}.store-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:15px 17px;margin-bottom:18px;border:1px solid #dce5f2;border-radius:14px;background:#fff}.store-copy{display:flex;align-items:center;gap:12px}.store-icon{font-size:21px}.store-card strong{display:block;font-size:14px}.store-card p{margin:3px 0 0;color:#68758b;font-size:13px}.button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:10px 14px;border:0;border-radius:9px;font:inherit;font-size:14px;font-weight:650;text-decoration:none;cursor:pointer;transition:background .15s,transform .15s}.button:hover{transform:translateY(-1px)}.button:focus-visible{outline:3px solid #9db6ff;outline-offset:2px}.button-primary{background:#3158c9;color:white}.button-primary:hover{background:#2548ad}.button-light{border:1px solid #dce3ed;background:white;color:#34425a}.button-light:hover{background:#f4f7fb}.button-success{background:#e8f6ee;color:#17663a}.button-success:hover{background:#d8efdf}.button:disabled{opacity:.6;cursor:wait}.section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:24px 2px 12px}.section-heading h2{margin:0;font-size:18px}.section-heading span{color:#68758b;font-size:13px}.orders{display:grid;gap:13px}.order-card{padding:18px;border:1px solid #e1e6ef;border-radius:15px;background:white;box-shadow:0 2px 8px rgba(20,35,70,.035)}.order-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid #edf0f5}.order-heading h3{margin:0 0 4px;font-size:18px}.order-id{color:#77839a;font-size:12px}.badge{display:inline-flex;align-items:center;min-height:27px;padding:4px 10px;border-radius:999px;background:#fff3df;color:#8b5410;font-size:12px;font-weight:700;white-space:nowrap}.badge.done{background:#e6f5eb;color:#1b6a3c}.details{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px;padding:15px 0}.detail-label{display:block;margin-bottom:4px;color:#748096;font-size:12px}.detail-value{color:#253149;font-size:14px;font-weight:600;overflow-wrap:anywhere}.comment{margin:0 0 14px;padding:11px 13px;border-radius:9px;background:#f7f9fc;color:#4b5870;font-size:14px;line-height:1.5}.actions{display:flex;gap:9px;flex-wrap:wrap}.empty,.error{padding:28px 20px;border:1px dashed #cfd7e4;border-radius:14px;background:#fff;text-align:center}.empty-icon{font-size:28px}.empty h3{margin:8px 0 5px}.empty p,.error{color:#68758b;line-height:1.5}.error{border-color:#f2c9c9;color:#9b2c2c}.loading{padding:30px;color:#68758b;text-align:center}@media(max-width:600px){.page{padding:20px 14px 34px}.header{align-items:center}.brand{gap:9px}.brand-icon{width:40px;height:40px}.summary{font-size:12px;padding:8px 10px}.store-card{align-items:flex-start;flex-direction:column}.store-card .button{width:100%}.order-card{padding:15px}.details{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.actions .button{flex:1 1 135px}}
+  </style>
 </head>
 <body>
-    <h1>Lista de Pedidos</h1>
-    <section id="no-more-tables"></section>
-
-    <script src="../scripts/api_pedidos_delivery.js"></script>
+  <main class="page">
+    <header class="header">
+      <div class="brand"><div class="brand-icon" aria-hidden="true">📦</div><div><p class="eyebrow">Ruta de entrega</p><h1 id="deliveryName">Mis pedidos</h1></div></div>
+      <div id="summary" class="summary" aria-live="polite">Cargando…</div>
+    </header>
+    <section id="storeCard" class="store-card" hidden>
+      <div class="store-copy"><span class="store-icon" aria-hidden="true">📍</span><div><strong>Ubicación del local</strong><p>Abre la ubicación del punto de retiro.</p></div></div>
+      <a id="storeLink" class="button button-light" target="_blank" rel="noopener">Ver local en mapa ↗</a>
+    </section>
+    <div class="section-heading"><h2>Pedidos asignados</h2><span id="orderCount"></span></div>
+    <section id="ordersList" class="orders" aria-live="polite"><div class="loading">Cargando pedidos…</div></section>
+  </main>
+  <script src="../scripts/api_pedidos_delivery.js"></script>
 </body>
 </html>

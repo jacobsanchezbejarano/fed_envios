@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Administración de pedidos</title>
   <link rel="stylesheet" href="../styles/base.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    body{padding:24px;background:#f6f7fb;color:#172033}.admin{max-width:1200px;margin:auto}.admin h1{margin:0 0 18px}.tabs,.toolbar,.filters,.delivery-form{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.tabs{border-bottom:1px solid #dce1eb;margin-bottom:18px}.tabs button{width:auto;background:transparent;color:#344054;border-radius:8px 8px 0 0}.tabs button.active{background:#1d4ed8;color:white}.panel{background:#fff;padding:18px;border:1px solid #e1e5ed;border-radius:12px;margin:14px 0}.toolbar{justify-content:space-between}.filters>*{width:auto;min-width:145px}.filters input{padding:10px;border:1px solid #d5dbe5;border-radius:6px}.btn{width:auto!important;display:inline-block!important;padding:10px 14px!important}.hint{color:#536174;line-height:1.55}.instructions{background:#eff6ff;border-left:4px solid #2563eb;padding:12px 16px;margin:12px 0;border-radius:4px}.delivery-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eee}.delivery-row .btn{margin-left:auto}.hidden{display:none}.status{min-height:1.4em;color:#344054}.danger{background:#b42318!important}
+    body{padding:24px;background:#f6f7fb;color:#172033}.admin{max-width:1200px;margin:auto}.admin h1{margin:0 0 18px}.tabs,.toolbar,.filters,.delivery-form{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.tabs{border-bottom:1px solid #dce1eb;margin-bottom:18px}.tabs button{width:auto;background:transparent;color:#344054;border-radius:8px 8px 0 0}.tabs button.active{background:#1d4ed8;color:white}.panel{background:#fff;padding:18px;border:1px solid #e1e5ed;border-radius:12px;margin:14px 0}.toolbar{justify-content:space-between}.filters>*{width:auto;min-width:145px}.filters input{padding:10px;border:1px solid #d5dbe5;border-radius:6px}.btn{width:auto!important;display:inline-block!important;padding:10px 14px!important}.hint{color:#536174;line-height:1.55}.instructions{background:#eff6ff;border-left:4px solid #2563eb;padding:12px 16px;margin:12px 0;border-radius:4px}.delivery-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eee}.delivery-row .btn{margin-left:auto}.action-buttons{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.action-buttons .btn{margin:0;white-space:nowrap}.map-btn{background:#2563eb!important;color:#fff!important;text-decoration:none;border-radius:5px}.store-map{height:360px;border-radius:10px;border:1px solid #d5dbe5;z-index:0}.location-tools{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.coordinates{font-variant-numeric:tabular-nums;color:#536174}.hidden{display:none}.status{min-height:1.4em;color:#344054}.danger{background:#b42318!important}@media(max-width:600px){body{padding:14px}.panel{padding:14px}.store-map{height:300px}}
   </style>
 </head>
 <body>
@@ -48,6 +50,13 @@
       <form id="deliveryForm" class="delivery-form"><input id="deliveryName" type="text" placeholder="Nombre del delivery" required><button class="btn" type="submit">Agregar</button></form>
       <p id="deliveryStatus" class="status" role="status"></p>
       <div id="deliveryList"></div>
+      <section class="panel">
+        <h2>Ubicación del local</h2>
+        <p class="hint">Haz clic en el mapa para colocar o mover el marcador. Guarda para compartir esta ubicación con los deliveries.</p>
+        <div id="storeMap" class="store-map" role="application" aria-label="Mapa para elegir la ubicación del local"></div>
+        <div class="location-tools"><span id="storeCoordinates" class="coordinates">Selecciona un punto en el mapa.</span><button id="saveStoreLocation" class="btn" type="button">Guardar ubicación</button></div>
+        <p id="storeLocationStatus" class="status" role="status"></p>
+      </section>
     </section>
   </main>
   <script src="../scripts/sec.js"></script>

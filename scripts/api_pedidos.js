@@ -9,14 +9,18 @@ const VALID_STATES = ['ENCARGADO', 'Pagado/Entregado'];
 const VALID_TYPES = ['En lugar', 'Delivery'];
 let pedidosGlobales = [];
 let deliveries = [];
+let storeMap = null;
+let storeMarker = null;
+let storeLocation = null;
 
 async function api(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: { 'Content-Type': 'application/json', 'x-api-key': obtenerApiKey(), ...(options.headers || {}) }
   });
-  if (!response.ok) throw new Error((await response.text()) || 'No se pudo completar la solicitud.');
-  return response.status === 204 ? null : response.json();
+  const body = await response.text();
+  if (!response.ok) throw new Error(body || 'No se pudo completar la solicitud.');
+  return body ? JSON.parse(body) : null;
 }
 
 async function obtenerPedidos() { return api('/pedidos'); }
@@ -25,6 +29,29 @@ function slugify(text) {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 function safeText(value) { return value == null ? '' : String(value); }
+function mostrarCoordenadas(location) {
+  document.getElementById('storeCoordinates').textContent = `Lat ${Number(location.lat).toFixed(6)} · Lng ${Number(location.lng).toFixed(6)}`;
+}
+
+async function initializeStoreMap() {
+  if (storeMap) { setTimeout(() => storeMap.invalidateSize(), 60); return; }
+  try {
+    storeLocation = await api('/pedidos/store-location');
+    storeMap = L.map('storeMap').setView([storeLocation.lat, storeLocation.lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(storeMap);
+    storeMarker = L.marker([storeLocation.lat, storeLocation.lng], { draggable: true }).addTo(storeMap);
+    storeMarker.on('dragend', event => {
+      const point = event.target.getLatLng(); storeLocation = { lat: point.lat, lng: point.lng }; mostrarCoordenadas(storeLocation);
+    });
+    storeMap.on('click', event => {
+      storeLocation = { lat: event.latlng.lat, lng: event.latlng.lng }; storeMarker.setLatLng(event.latlng); mostrarCoordenadas(storeLocation);
+    });
+    mostrarCoordenadas(storeLocation);
+  } catch (error) {
+    document.getElementById('storeLocationStatus').textContent = 'No se pudo cargar el mapa. Intenta de nuevo.';
+    console.error(error);
+  }
+}
 
 async function guardarDeliveries() {
   await api('/pedidos/deliveries/list', { method: 'POST', body: JSON.stringify({ deliveries }) });
@@ -118,7 +145,12 @@ function dibujarTabla(pedidos) {
     });
     deliveryCell.appendChild(select);
     const actions = row.insertCell(); actions.dataset.title = 'Acciones';
-    if (pedido.pedido_latitud && pedido.pedido_longitud) { const map = document.createElement('a'); map.href = `https://www.google.com/maps/place/${pedido.pedido_latitud},${pedido.pedido_longitud}`; map.target = '_blank'; map.rel = 'noopener'; map.textContent = 'Mapa'; actions.appendChild(map); }
+    const actionButtons = document.createElement('div'); actionButtons.className = 'action-buttons';
+    if (pedido.pedido_latitud && pedido.pedido_longitud) {
+      const map = document.createElement('a'); map.className = 'btn map-btn'; map.href = `https://www.google.com/maps/place/${pedido.pedido_latitud},${pedido.pedido_longitud}`; map.target = '_blank'; map.rel = 'noopener'; map.setAttribute('aria-label', 'Ver ubicación en mapa');
+      const icon = document.createElement('span'); icon.setAttribute('aria-hidden', 'true'); icon.textContent = '📍 ';
+      map.append(icon, document.createTextNode('Ver en mapa')); actionButtons.appendChild(map);
+    }
     const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn danger'; remove.textContent = 'Eliminar';
     remove.addEventListener('click', async () => {
       if (!confirm(`¿Eliminar el pedido de ${pedido.pedido_nombre || pedido.pedido_id}? Esta acción no se puede deshacer.`)) return;
@@ -126,7 +158,7 @@ function dibujarTabla(pedidos) {
       try { await api(`/pedidos/${pedido._id}`, { method: 'DELETE' }); pedidosGlobales = pedidosGlobales.filter(item => item._id !== pedido._id); dibujarTablaFiltrada(); }
       catch (error) { remove.disabled = false; alert('No se pudo eliminar el pedido.'); console.error(error); }
     });
-    if (actions.childNodes.length) actions.append(' · '); actions.appendChild(remove);
+    actionButtons.appendChild(remove); actions.appendChild(actionButtons);
   });
   wrapper.appendChild(table); container.appendChild(wrapper);
 }
@@ -135,7 +167,7 @@ function celda(row, key) { return safeText(row[key]).trim(); }
 function filasDesdeExcel(sheet) { return XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false }); }
 function validarFila(row, index) {
   const line = index + 2;
-  const required = ['pedido_id','pedido_pais','pedido_ciudad','pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_zona','pedido_comentarios','pedido_vendedor'];
+  const required = ['pedido_id','pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_zona','pedido_comentarios','pedido_vendedor'];
   const missing = required.filter(key => !celda(row, key));
   if (missing.length) return `Fila ${line}: faltan ${missing.join(', ')}.`;
   if (!VALID_STATES.includes(celda(row, 'pedido_estado'))) return `Fila ${line}: estado no permitido.`;
@@ -159,7 +191,7 @@ async function importarExcel() {
   status.textContent = 'Importando pedidos…';
   try {
     for (const row of rows) {
-      const pedido = Object.fromEntries(['pedido_id','pedido_pais','pedido_ciudad','pedido_celular','pedido_nombre','pedido_cantidad','pedido_tipo','pedido_hora_entrega','pedido_turno','pedido_zona','pedido_comentarios','pedido_vendedor'].map(key => [key, celda(row, key)]));
+      const pedido = Object.fromEntries(['pedido_id','pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_turno','pedido_zona','pedido_comentarios','pedido_vendedor'].map(key => [key, celda(row, key)]));
       pedido.pedido_latitud = celda(row, 'pedido_latitud'); pedido.pedido_longitud = celda(row, 'pedido_longitud');
       await api('/pedidos', { method: 'POST', body: JSON.stringify(pedido) });
     }
@@ -168,7 +200,7 @@ async function importarExcel() {
 }
 
 document.getElementById('ordersTab').addEventListener('click', () => { document.getElementById('ordersPanel').classList.remove('hidden'); document.getElementById('deliveriesPanel').classList.add('hidden'); document.getElementById('ordersTab').classList.add('active'); document.getElementById('deliveriesTab').classList.remove('active'); });
-document.getElementById('deliveriesTab').addEventListener('click', () => { document.getElementById('deliveriesPanel').classList.remove('hidden'); document.getElementById('ordersPanel').classList.add('hidden'); document.getElementById('deliveriesTab').classList.add('active'); document.getElementById('ordersTab').classList.remove('active'); });
+document.getElementById('deliveriesTab').addEventListener('click', () => { document.getElementById('deliveriesPanel').classList.remove('hidden'); document.getElementById('ordersPanel').classList.add('hidden'); document.getElementById('deliveriesTab').classList.add('active'); document.getElementById('ordersTab').classList.remove('active'); initializeStoreMap(); });
 document.getElementById('deliveryForm').addEventListener('submit', async event => {
   event.preventDefault(); const name = document.getElementById('deliveryName').value.trim(); const id = slugify(name);
   if (!id || deliveries.some(d => d.id === id)) { document.getElementById('deliveryStatus').textContent = 'Ese nombre ya existe o no es válido.'; return; }
@@ -177,6 +209,15 @@ document.getElementById('deliveryForm').addEventListener('submit', async event =
   catch (error) { deliveries.pop(); document.getElementById('deliveryStatus').textContent = 'No se pudo guardar el delivery.'; console.error(error); }
 });
 document.getElementById('importButton').addEventListener('click', importarExcel);
+document.getElementById('saveStoreLocation').addEventListener('click', async event => {
+  if (!storeLocation) return;
+  const button = event.currentTarget; const status = document.getElementById('storeLocationStatus'); button.disabled = true; status.textContent = 'Guardando ubicación…';
+  try {
+    storeLocation = await api('/pedidos/store-location', { method: 'PUT', body: JSON.stringify(storeLocation) });
+    mostrarCoordenadas(storeLocation); status.textContent = 'Ubicación del local guardada.';
+  } catch (error) { status.textContent = 'No se pudo guardar la ubicación.'; console.error(error); }
+  finally { button.disabled = false; }
+});
 ['filterDelivery','filterStatus','filterTurno','filterHour'].forEach(id => document.getElementById(id).addEventListener('input', dibujarTablaFiltrada));
 document.getElementById('clearFilters').addEventListener('click', () => { ['filterDelivery','filterStatus','filterTurno','filterHour'].forEach(id => { document.getElementById(id).value = ''; }); dibujarTablaFiltrada(); });
 

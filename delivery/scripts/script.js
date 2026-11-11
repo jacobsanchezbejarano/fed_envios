@@ -136,6 +136,16 @@ restaurant_marker = L.marker(restaurant_location, { icon: restaurantIcon }).
 addTo(map)
 .bindPopup('<a target="_blank" href="https://www.google.com/maps/place/' + restaurant_location.lat + ',' + restaurant_location.lng + '">Local</a>');
 
+fetch(`${API_URL}/pedidos/store-location`)
+    .then(response => response.ok ? response.json() : null)
+    .then(location => {
+        if (!location || !Number.isFinite(Number(location.lat)) || !Number.isFinite(Number(location.lng))) return;
+        restaurant_location = { lat: Number(location.lat), lng: Number(location.lng) };
+        restaurant_marker.setLatLng(restaurant_location);
+        restaurant_marker.setPopupContent('<a target="_blank" rel="noopener" href="https://www.google.com/maps/place/' + restaurant_location.lat + ',' + restaurant_location.lng + '">Local</a>');
+    })
+    .catch(error => console.error('No se pudo cargar la ubicación del local:', error));
+
 // Listen for a click event on the map
 map.on('click', function(e) {
     if (marker) {
