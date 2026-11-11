@@ -2,14 +2,22 @@ const urlParams = new URLSearchParams(window.location.search);
 const delivery = urlParams.get('delivery'); // Devuelve 'valor1'
 const API_URL = false ? "http://localhost:3000" : 'https://envios-rdb6.onrender.com';
 
+function obtenerApiKey() {
+    let key = localStorage.getItem('apiKey');
+    if (!key) {
+        key = prompt('Ingresa tu API Key para actualizar el estado del pedido:');
+        if (key) localStorage.setItem('apiKey', key);
+    }
+    return key || '';
+}
+
 async function obtenerPedidosPorDelivery(deliveryId) {
     try {
         const response = await fetch(`${API_URL}/pedidos/delivery/${deliveryId}`,
             {
                 method: 'GET',
                 headers: {
-                    'Content-Type': 'application/json',
-                    "x-api-key": obtenerApiKey()
+                    'Content-Type': 'application/json'
                 },
             }
         );
@@ -36,6 +44,7 @@ function dibujarTabla(pedidos) {
       "Estado Pedido",
       "Tipo de Pedido",
       "Hora entrega",
+      "Horario",
       "Zona",
       "Comentarios",
       "Vendedor",
@@ -63,6 +72,7 @@ function dibujarTabla(pedidos) {
               case 'pedido_estado':
               case 'pedido_tipo':
               case 'pedido_hora_entrega':
+              case 'pedido_turno':
               case 'pedido_zona':
               case 'pedido_comentarios':
               case 'pedido_vendedor':

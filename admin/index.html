@@ -1,22 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Order Form</title>
-    <!-- Include Leaflet CSS and JavaScript -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <link rel="stylesheet" href="../styles/base.css">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Asegúrate de usar la última versión de jQuery -->
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
-    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Administración de pedidos</title>
+  <link rel="stylesheet" href="../styles/base.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    body{padding:24px;background:#f6f7fb;color:#172033}.admin{max-width:1200px;margin:auto}.admin h1{margin:0 0 18px}.tabs,.toolbar,.filters,.delivery-form{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.tabs{border-bottom:1px solid #dce1eb;margin-bottom:18px}.tabs button{width:auto;background:transparent;color:#344054;border-radius:8px 8px 0 0}.tabs button.active{background:#1d4ed8;color:white}.panel{background:#fff;padding:18px;border:1px solid #e1e5ed;border-radius:12px;margin:14px 0}.toolbar{justify-content:space-between}.filters>*{width:auto;min-width:145px}.filters input{padding:10px;border:1px solid #d5dbe5;border-radius:6px}.btn{width:auto!important;display:inline-block!important;padding:10px 14px!important}.hint{color:#536174;line-height:1.55}.instructions{background:#eff6ff;border-left:4px solid #2563eb;padding:12px 16px;margin:12px 0;border-radius:4px}.delivery-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eee}.delivery-row .btn{margin-left:auto}.hidden{display:none}.status{min-height:1.4em;color:#344054}.danger{background:#b42318!important}
+  </style>
 </head>
 <body>
-    <h1>Lista de Pedidos</h1>
-    <section id="no-more-tables"></section>
+  <main class="admin">
+    <h1>Administración de pedidos</h1>
+    <nav class="tabs" aria-label="Secciones de administración">
+      <button id="ordersTab" class="active" type="button">Pedidos</button>
+      <button id="deliveriesTab" type="button">Deliveries</button>
+    </nav>
 
-    <script src="../scripts/sec.js"></script>
-    <script src="../scripts/api_pedidos.js"></script>
+    <section id="ordersPanel">
+      <div class="panel">
+        <div class="toolbar">
+          <div><h2>Importar pedidos desde Excel</h2><p class="hint">Descarga la plantilla, completa una fila por pedido y luego selecciona el archivo.</p></div>
+          <a class="btn" href="../pedidos-ejemplo.xlsx" download>Descargar Excel de ejemplo</a>
+        </div>
+        <div class="instructions">
+          <strong>Instrucciones:</strong> Estado permitido: <b>ENCARGADO</b> o <b>Pagado/Entregado</b>. Tipo permitido: <b>En lugar</b> o <b>Delivery</b>.<br>
+          La hora debe tener formato de 12 horas con AM o PM (ej.: <b>2:30 PM</b>). Ubicación (latitud y longitud) y turno (<b>Medio día</b> o <b>Noche</b>) son opcionales. Las demás columnas de la plantilla son obligatorias.
+        </div>
+        <div class="toolbar"><input id="excelFile" type="file" accept=".xlsx,.xls"><button id="importButton" class="btn" type="button">Importar pedidos</button></div>
+        <p id="importStatus" class="status" role="status"></p>
+      </div>
+
+      <div class="panel filters" aria-label="Filtros de pedidos">
+        <select id="filterDelivery" aria-label="Filtrar por delivery"><option value="">Todos los deliveries</option></select>
+        <select id="filterStatus" aria-label="Filtrar por estado"><option value="">Todos los estados</option><option>ENCARGADO</option><option>Pagado/Entregado</option></select>
+        <select id="filterTurno" aria-label="Filtrar por horario"><option value="">Todos los horarios</option><option>Medio día</option><option>Noche</option></select>
+        <input id="filterHour" type="time" aria-label="Filtrar por hora">
+        <button id="clearFilters" class="btn" type="button">Limpiar filtros</button>
+      </div>
+      <section id="no-more-tables"></section>
+    </section>
+
+    <section id="deliveriesPanel" class="panel hidden">
+      <h2>Lista de deliveries</h2>
+      <p class="hint">Agrega o elimina nombres. Copia el enlace para compartir la lista de pedidos asignados a cada persona.</p>
+      <form id="deliveryForm" class="delivery-form"><input id="deliveryName" type="text" placeholder="Nombre del delivery" required><button class="btn" type="submit">Agregar</button></form>
+      <p id="deliveryStatus" class="status" role="status"></p>
+      <div id="deliveryList"></div>
+    </section>
+  </main>
+  <script src="../scripts/sec.js"></script>
+  <script src="../scripts/api_pedidos.js"></script>
 </body>
 </html>

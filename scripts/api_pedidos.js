@@ -1,257 +1,186 @@
 const API_URL = false ? "http://localhost:3000" : 'https://envios-rdb6.onrender.com';
-
-// Lista predeterminada de deliveries
-const deliveriesDisponibles = [
-  { id: "josema", nombre: "Josema" },
-  { id: "niki", nombre: "Niki" },
-  { id: "dayana", nombre: "Dayana" },
-  { id: "rolando", nombre: "Rolando" },
+const PEDIDO_COLUMNS = [
+  ['pedido_celular', 'Celular'], ['pedido_nombre', 'Nombre'], ['pedido_cantidad', 'Cantidad'],
+  ['pedido_estado', 'Estado'], ['pedido_tipo', 'Tipo'], ['pedido_hora_entrega', 'Hora'],
+  ['pedido_turno', 'Horario'], ['pedido_zona', 'Zona'], ['pedido_comentarios', 'Comentarios'],
+  ['pedido_vendedor', 'Vendedor']
 ];
+const VALID_STATES = ['ENCARGADO', 'Pagado/Entregado'];
+const VALID_TYPES = ['En lugar', 'Delivery'];
+let pedidosGlobales = [];
+let deliveries = [];
 
-// =============================
-// ENVIAR PEDIDO
-// =============================
-async function enviarPedido(event) {
-    event.preventDefault();
-
-    const form = document.getElementById("pedidoForm");
-    const formData = new FormData(form);
-
-    for (const [key, value] of formData.entries()) {
-
-        if (key === "pedido_comentarios") continue;
-
-        if (!value || value.trim() === "") {
-            alert("Todos los campos son obligatorios excepto comentarios.");
-            return;
-        }
-    }
-
-    const data = Object.fromEntries(formData.entries());
-
-    try {
-      const response = await fetch(`${API_URL}/pedidos`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al enviar los datos a la API.');
-      }
-
-      alert('Datos enviados exitosamente');
-      location.reload();
-
-    } catch (error) {
-      console.error('Error al enviar los datos a la API:', error);
-    }
+async function api(path, options = {}) {
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', 'x-api-key': obtenerApiKey(), ...(options.headers || {}) }
+  });
+  if (!response.ok) throw new Error((await response.text()) || 'No se pudo completar la solicitud.');
+  return response.status === 204 ? null : response.json();
 }
 
-// =============================
-// OBTENER PEDIDOS
-// =============================
-async function obtenerPedidos() {
-    try {
-      const response = await fetch(`${API_URL}/pedidos`,
-        {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                "x-api-key": obtenerApiKey()
-            },
-        }
-      );
-      if (!response.ok) {
-        throw new Error('Error al obtener los pedidos.');
-      }
-      return await response.json();
+async function obtenerPedidos() { return api('/pedidos'); }
+async function cargarDeliveries() { deliveries = await api('/pedidos/deliveries/list'); }
+function slugify(text) {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+function safeText(value) { return value == null ? '' : String(value); }
 
-    } catch (error) {
-      console.error('Error al obtener los pedidos:', error);
-      throw error;
-    }
+async function guardarDeliveries() {
+  await api('/pedidos/deliveries/list', { method: 'POST', body: JSON.stringify({ deliveries }) });
+  llenarFiltroDeliveries();
+  dibujarDeliveries();
+  dibujarTablaFiltrada();
 }
 
-// =============================
-// ASIGNAR DELIVERY
-// =============================
-async function asignarDelivery(idPedido, deliveryId, selectElement) {
-    try {
-
-        selectElement.disabled = true;
-
-        const response = await fetch(`${API_URL}/pedidos/delivery/${idPedido}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                "x-api-key": obtenerApiKey()
-            },
-            body: JSON.stringify({ delivery: deliveryId })
-        });
-
-        if (!response.ok) {
-            throw new Error('Error al asignar delivery');
-        }
-
-        console.log("Delivery asignado correctamente");
-
-    } catch (error) {
-        console.error("Error asignando delivery:", error);
-        alert("No se pudo asignar el delivery");
-    } finally {
-        selectElement.disabled = false;
-    }
+function llenarFiltroDeliveries() {
+  const select = document.getElementById('filterDelivery');
+  if (!select) return;
+  const current = select.value;
+  select.innerHTML = '<option value="">Todos los deliveries</option>';
+  deliveries.forEach(d => {
+    const option = document.createElement('option'); option.value = d.id; option.textContent = d.nombre; select.appendChild(option);
+  });
+  select.value = current;
 }
 
-function capitalize(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-// =============================
-// DIBUJAR TABLA
-// =============================
-function dibujarTabla(pedidos) {
-
-    const contenedor = document.getElementById("no-more-tables");
-    contenedor.innerHTML = "";
-
-    const tabla = document.createElement('div');
-    tabla.classList.add('table-responsive');
-
-    const tablaInterna = document.createElement('table');
-    tablaInterna.classList.add('table', 'table-bordered', 'table-striped', 'table-hover', 'table-condensed', 'cf');
-
-    const encabezado = tablaInterna.createTHead();
-    const filaEncabezado = encabezado.insertRow();
-
-    var header_pedidos = [
-        {title: "Celular", class: "numeric"},
-        {title: "Nombre", class: ""},
-        {title: "Cantidad", class: "numeric"},
-        {title: "Estado Pedido", class: ""},
-        {title: "Tipo de Pedido", class: ""},
-        {title: "Hora entrega", class: "numeric"},
-        {title: "Zona", class: ""},
-        {title: "Comentarios", class: ""},
-        {title: "Vendedor", class: ""},
-        {title: "Delivery", class: ""}, // 👈 NUEVA COLUMNA
-        {title: "Acciones", class: ""}
-    ];
-
-    for (const item of header_pedidos) {
-        const th = document.createElement('th');
-        th.textContent = item.title;
-        if (item.class) th.classList.add(item.class);
-        filaEncabezado.appendChild(th);
-    }
-
-    const cuerpo = tablaInterna.createTBody();
-
-    pedidos.forEach(pedido => {
-
-        const fila = cuerpo.insertRow();
-
-        for (const key in pedido) {
-            switch (key) {
-
-                case 'pedido_celular':
-                    const celda = fila.insertCell();
-                    const enlace = document.createElement('a');
-                    enlace.href = 'https://wa.me/591' + pedido[key];
-                    enlace.textContent = pedido[key];
-                    enlace.target = "_blank";
-                    celda.appendChild(enlace);
-                    celda.setAttribute('data-title', 'Celular');
-                    break;
-
-                case 'pedido_nombre':
-                case 'pedido_cantidad':
-                case 'pedido_estado':
-                case 'pedido_tipo':
-                case 'pedido_hora_entrega':
-                case 'pedido_zona':
-                case 'pedido_comentarios':
-                case 'pedido_vendedor':
-                    const celdaNormal = fila.insertCell();
-                    celdaNormal.textContent = pedido[key];
-                    celdaNormal.setAttribute('data-title', capitalize(key.replace('pedido_', '')));
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        // =============================
-        // DROPDOWN DELIVERY
-        // =============================
-        const celdaDelivery = fila.insertCell();
-        celdaDelivery.setAttribute('data-title', 'Delivery');
-
-        const selectDelivery = document.createElement("select");
-
-        const optionDefault = document.createElement("option");
-        optionDefault.value = "";
-        optionDefault.textContent = "Sin asignar";
-        selectDelivery.appendChild(optionDefault);
-
-        deliveriesDisponibles.forEach(delivery => {
-            const option = document.createElement("option");
-            option.value = delivery.id;
-            option.textContent = delivery.nombre;
-
-            if (pedido.delivery == delivery.id) {
-                option.selected = true;
-            }
-
-            selectDelivery.appendChild(option);
-        });
-
-        selectDelivery.addEventListener("change", function() {
-
-            const nuevoDeliveryId = this.value;
-
-            const confirmacion = confirm("¿Asignar este delivery al pedido?");
-            if (confirmacion) {
-                asignarDelivery(pedido._id, nuevoDeliveryId, this);
-                pedido.delivery_id = nuevoDeliveryId;
-            } else {
-                this.value = pedido.delivery_id || "";
-            }
-        });
-
-        celdaDelivery.appendChild(selectDelivery);
-
-        // =============================
-        // LINK MAPA
-        // =============================
-        const celdaAccion = fila.insertCell();
-        celdaAccion.setAttribute('data-title', 'Acciones');
-
-        if (pedido.pedido_latitud && pedido.pedido_longitud) {
-            const link = document.createElement('a');
-            link.href = 'https://www.google.com/maps/place/' + pedido.pedido_latitud + ',' + pedido.pedido_longitud;
-            link.target = '_blank';
-            link.textContent = 'Ir a mapa';
-            celdaAccion.appendChild(link);
-        }
+function dibujarDeliveries() {
+  const list = document.getElementById('deliveryList');
+  if (!list) return;
+  list.replaceChildren();
+  deliveries.forEach(delivery => {
+    const row = document.createElement('div'); row.className = 'delivery-row';
+    const name = document.createElement('strong'); name.textContent = delivery.nombre;
+    const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'btn'; copy.textContent = 'Copiar enlace';
+    copy.addEventListener('click', async () => {
+      const url = new URL('../delivery/index.html', window.location.href); url.searchParams.set('delivery', delivery.id);
+      try { await navigator.clipboard.writeText(url.href); copy.textContent = 'Enlace copiado'; }
+      catch { window.prompt('Copia este enlace:', url.href); }
+      setTimeout(() => { copy.textContent = 'Copiar enlace'; }, 1800);
     });
-
-    tabla.appendChild(tablaInterna);
-    contenedor.appendChild(tabla);
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn danger'; remove.textContent = 'Eliminar';
+    remove.addEventListener('click', async () => {
+      if (!confirm(`¿Eliminar a ${delivery.nombre} de la lista de deliveries?`)) return;
+      deliveries = deliveries.filter(item => item.id !== delivery.id);
+      try { await guardarDeliveries(); }
+      catch (error) { alert('No se pudo guardar la lista.'); console.error(error); }
+    });
+    row.append(name, copy, remove); list.appendChild(row);
+  });
 }
 
-// =============================
-// INIT
-// =============================
-(async () => {
-    try {
-        const pedidos = await obtenerPedidos();
-        dibujarTabla(pedidos);
-    } catch (error) {
-        console.error('Error:', error);
+function horaEnMinutos(value) {
+  const match = safeText(value).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!match) return null;
+  let hour = Number(match[1]) % 12;
+  if (match[3].toUpperCase() === 'PM') hour += 12;
+  return hour * 60 + Number(match[2]);
+}
+
+function filtrarPedidos() {
+  const delivery = document.getElementById('filterDelivery').value;
+  const status = document.getElementById('filterStatus').value;
+  const turno = document.getElementById('filterTurno').value;
+  const hour = document.getElementById('filterHour').value;
+  const minutes = hour ? Number(hour.slice(0, 2)) * 60 + Number(hour.slice(3, 5)) : null;
+  return pedidosGlobales.filter(p => (!delivery || p.delivery === delivery) && (!status || p.pedido_estado === status) && (!turno || p.pedido_turno === turno) && (minutes === null || horaEnMinutos(p.pedido_hora_entrega) === minutes));
+}
+
+function dibujarTablaFiltrada() { dibujarTabla(filtrarPedidos()); }
+
+function dibujarTabla(pedidos) {
+  const container = document.getElementById('no-more-tables');
+  if (!container) return;
+  container.replaceChildren();
+  if (!pedidos.length) { container.innerHTML = '<p class="panel">No hay pedidos que coincidan con estos filtros.</p>'; return; }
+  const wrapper = document.createElement('div'); wrapper.className = 'table-responsive panel';
+  const table = document.createElement('table'); table.className = 'table table-bordered table-striped table-hover';
+  const head = table.createTHead().insertRow();
+  PEDIDO_COLUMNS.forEach(([, label]) => { const th = document.createElement('th'); th.textContent = label; head.appendChild(th); });
+  ['Delivery', 'Acciones'].forEach(label => { const th = document.createElement('th'); th.textContent = label; head.appendChild(th); });
+  const body = table.createTBody();
+  pedidos.forEach(pedido => {
+    const row = body.insertRow();
+    PEDIDO_COLUMNS.forEach(([key, label]) => {
+      const cell = row.insertCell(); cell.dataset.title = label; cell.textContent = safeText(pedido[key]);
+      if (key === 'pedido_celular' && pedido[key]) { const link = document.createElement('a'); link.href = `https://wa.me/591${encodeURIComponent(pedido[key])}`; link.target = '_blank'; link.rel = 'noopener'; link.textContent = safeText(pedido[key]); cell.replaceChildren(link); }
+    });
+    const deliveryCell = row.insertCell(); deliveryCell.dataset.title = 'Delivery';
+    const select = document.createElement('select');
+    const none = document.createElement('option'); none.value = ''; none.textContent = 'Sin asignar'; select.appendChild(none);
+    deliveries.forEach(d => { const option = document.createElement('option'); option.value = d.id; option.textContent = d.nombre; option.selected = pedido.delivery === d.id; select.appendChild(option); });
+    select.value = pedido.delivery || '';
+    select.addEventListener('change', async () => {
+      const prior = pedido.delivery || ''; select.disabled = true;
+      try { await api(`/pedidos/delivery/${pedido._id}`, { method: 'PUT', body: JSON.stringify({ delivery: select.value }) }); pedido.delivery = select.value; }
+      catch (error) { select.value = prior; alert('No se pudo asignar el delivery.'); console.error(error); }
+      finally { select.disabled = false; }
+    });
+    deliveryCell.appendChild(select);
+    const actions = row.insertCell(); actions.dataset.title = 'Acciones';
+    if (pedido.pedido_latitud && pedido.pedido_longitud) { const map = document.createElement('a'); map.href = `https://www.google.com/maps/place/${pedido.pedido_latitud},${pedido.pedido_longitud}`; map.target = '_blank'; map.rel = 'noopener'; map.textContent = 'Mapa'; actions.appendChild(map); }
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn danger'; remove.textContent = 'Eliminar';
+    remove.addEventListener('click', async () => {
+      if (!confirm(`¿Eliminar el pedido de ${pedido.pedido_nombre || pedido.pedido_id}? Esta acción no se puede deshacer.`)) return;
+      remove.disabled = true;
+      try { await api(`/pedidos/${pedido._id}`, { method: 'DELETE' }); pedidosGlobales = pedidosGlobales.filter(item => item._id !== pedido._id); dibujarTablaFiltrada(); }
+      catch (error) { remove.disabled = false; alert('No se pudo eliminar el pedido.'); console.error(error); }
+    });
+    if (actions.childNodes.length) actions.append(' · '); actions.appendChild(remove);
+  });
+  wrapper.appendChild(table); container.appendChild(wrapper);
+}
+
+function celda(row, key) { return safeText(row[key]).trim(); }
+function filasDesdeExcel(sheet) { return XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false }); }
+function validarFila(row, index) {
+  const line = index + 2;
+  const required = ['pedido_id','pedido_pais','pedido_ciudad','pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_zona','pedido_comentarios','pedido_vendedor'];
+  const missing = required.filter(key => !celda(row, key));
+  if (missing.length) return `Fila ${line}: faltan ${missing.join(', ')}.`;
+  if (!VALID_STATES.includes(celda(row, 'pedido_estado'))) return `Fila ${line}: estado no permitido.`;
+  if (!VALID_TYPES.includes(celda(row, 'pedido_tipo'))) return `Fila ${line}: tipo de entrega no permitido.`;
+  if (!/^(0?[1-9]|1[0-2]):[0-5]\d\s*(AM|PM)$/i.test(celda(row, 'pedido_hora_entrega'))) return `Fila ${line}: la hora debe tener formato 12 horas y AM o PM (ej.: 2:30 PM).`;
+  const lat = celda(row, 'pedido_latitud'), lng = celda(row, 'pedido_longitud');
+  if ((lat && !lng) || (!lat && lng)) return `Fila ${line}: completa latitud y longitud juntas o deja ambas vacías.`;
+  if (lat && (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng)))) return `Fila ${line}: ubicación inválida.`;
+  if (celda(row, 'pedido_turno') && !['Medio día', 'Noche'].includes(celda(row, 'pedido_turno'))) return `Fila ${line}: turno debe ser Medio día o Noche.`;
+  return null;
+}
+
+async function importarExcel() {
+  const input = document.getElementById('excelFile'); const status = document.getElementById('importStatus');
+  if (!input.files.length) { status.textContent = 'Selecciona un archivo Excel.'; return; }
+  const workbook = XLSX.read(await input.files[0].arrayBuffer(), { type: 'array' });
+  const rows = filasDesdeExcel(workbook.Sheets[workbook.SheetNames[0]]);
+  if (!rows.length) { status.textContent = 'El archivo no contiene pedidos.'; return; }
+  const error = rows.map(validarFila).find(Boolean);
+  if (error) { status.textContent = error; return; }
+  status.textContent = 'Importando pedidos…';
+  try {
+    for (const row of rows) {
+      const pedido = Object.fromEntries(['pedido_id','pedido_pais','pedido_ciudad','pedido_celular','pedido_nombre','pedido_cantidad','pedido_tipo','pedido_hora_entrega','pedido_turno','pedido_zona','pedido_comentarios','pedido_vendedor'].map(key => [key, celda(row, key)]));
+      pedido.pedido_latitud = celda(row, 'pedido_latitud'); pedido.pedido_longitud = celda(row, 'pedido_longitud');
+      await api('/pedidos', { method: 'POST', body: JSON.stringify(pedido) });
     }
+    pedidosGlobales = await obtenerPedidos(); dibujarTablaFiltrada(); input.value = ''; status.textContent = `${rows.length} pedido(s) importado(s).`;
+  } catch (error) { status.textContent = `La importación se detuvo: ${error.message}`; console.error(error); }
+}
+
+document.getElementById('ordersTab').addEventListener('click', () => { document.getElementById('ordersPanel').classList.remove('hidden'); document.getElementById('deliveriesPanel').classList.add('hidden'); document.getElementById('ordersTab').classList.add('active'); document.getElementById('deliveriesTab').classList.remove('active'); });
+document.getElementById('deliveriesTab').addEventListener('click', () => { document.getElementById('deliveriesPanel').classList.remove('hidden'); document.getElementById('ordersPanel').classList.add('hidden'); document.getElementById('deliveriesTab').classList.add('active'); document.getElementById('ordersTab').classList.remove('active'); });
+document.getElementById('deliveryForm').addEventListener('submit', async event => {
+  event.preventDefault(); const name = document.getElementById('deliveryName').value.trim(); const id = slugify(name);
+  if (!id || deliveries.some(d => d.id === id)) { document.getElementById('deliveryStatus').textContent = 'Ese nombre ya existe o no es válido.'; return; }
+  deliveries.push({ id, nombre: name });
+  try { await guardarDeliveries(); event.target.reset(); document.getElementById('deliveryStatus').textContent = 'Delivery agregado.'; }
+  catch (error) { deliveries.pop(); document.getElementById('deliveryStatus').textContent = 'No se pudo guardar el delivery.'; console.error(error); }
+});
+document.getElementById('importButton').addEventListener('click', importarExcel);
+['filterDelivery','filterStatus','filterTurno','filterHour'].forEach(id => document.getElementById(id).addEventListener('input', dibujarTablaFiltrada));
+document.getElementById('clearFilters').addEventListener('click', () => { ['filterDelivery','filterStatus','filterTurno','filterHour'].forEach(id => { document.getElementById(id).value = ''; }); dibujarTablaFiltrada(); });
+
+(async () => {
+  try { [pedidosGlobales, deliveries] = await Promise.all([obtenerPedidos(), cargarDeliveries().then(() => deliveries)]); llenarFiltroDeliveries(); dibujarDeliveries(); dibujarTablaFiltrada(); }
+  catch (error) { document.getElementById('importStatus').textContent = `No se pudieron cargar los pedidos: ${error.message}`; console.error(error); }
 })();

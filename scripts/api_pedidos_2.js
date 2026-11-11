@@ -14,13 +14,16 @@ if(mapa){
 }
 
 
-// Lista predeterminada de deliveries
-const deliveriesDisponibles = [
-  { id: "josema", nombre: "Josema", color: "red" },
-  { id: "niki", nombre: "Niki", color: "blue" },
-  { id: "dayana", nombre: "Dayana", color: "yellow" },
-  { id: "rolando", nombre: "Rolando", color: "orange" },
-];
+let deliveriesDisponibles = [];
+
+async function cargarDeliveries() {
+    const response = await fetch(`${API_URL_}/pedidos/deliveries/list`, {
+        headers: { 'Content-Type': 'application/json', 'x-api-key': obtenerApiKey() }
+    });
+    if (!response.ok) throw new Error('Error al obtener la lista de deliveries');
+    const colores = ['red', 'blue', 'yellow', 'orange', 'violet', 'green', 'grey'];
+    deliveriesDisponibles = (await response.json()).map((delivery, index) => ({ ...delivery, color: colores[index % colores.length] }));
+}
 
 // =============================
 // VARIABLES MAPA
@@ -510,6 +513,7 @@ function dibujarTabla(pedidos){
 
     try{
 
+        await cargarDeliveries();
         pedidosGlobal = await obtenerPedidos();
 
         dibujarTabla(pedidosGlobal);
