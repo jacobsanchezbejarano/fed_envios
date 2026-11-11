@@ -1,6 +1,6 @@
 const urlParams = new URLSearchParams(window.location.search);
 const delivery = urlParams.get('delivery'); // Devuelve 'valor1'
-const API_URL = false ? "http://localhost:3000" : 'https://envios-6wpy.onrender.com';
+const API_URL = false ? "http://localhost:3000" : 'https://envios-rdb6.onrender.com';
 
 async function obtenerPedidosPorDelivery(deliveryId) {
     try {

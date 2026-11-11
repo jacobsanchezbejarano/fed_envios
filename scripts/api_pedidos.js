@@ -1,4 +1,4 @@
-const API_URL = false ? "http://localhost:3000" : 'https://envios-6wpy.onrender.com';
+const API_URL = false ? "http://localhost:3000" : 'https://envios-rdb6.onrender.com';
 
 // Lista predeterminada de deliveries
 const deliveriesDisponibles = [
