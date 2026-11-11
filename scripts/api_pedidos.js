@@ -12,6 +12,10 @@ let deliveries = [];
 let storeMap = null;
 let storeMarker = null;
 let storeLocation = null;
+let editMap = null;
+let editMarker = null;
+let editingOrder = null;
+let editPoint = null;
 
 async function api(path, options = {}) {
   const response = await fetch(`${API_URL}${path}`, {
@@ -53,6 +57,54 @@ function slugify(text) {
 function safeText(value) { return value == null ? '' : String(value); }
 function mostrarCoordenadas(location) {
   document.getElementById('storeCoordinates').textContent = `Lat ${Number(location.lat).toFixed(6)} · Lng ${Number(location.lng).toFixed(6)}`;
+}
+
+function mostrarPuntoEdicion(point) {
+  editPoint = point;
+  const coordinates = document.getElementById('editOrderCoordinates');
+  const removeButton = document.getElementById('removeOrderLocation');
+  if (!point) {
+    if (editMarker) { editMarker.remove(); editMarker = null; }
+    coordinates.textContent = 'Sin ubicación marcada';
+    removeButton.disabled = true;
+    return;
+  }
+  if (!editMarker) {
+    editMarker = L.marker(point, { draggable: true }).addTo(editMap);
+    editMarker.on('dragend', event => {
+      const { lat, lng } = event.target.getLatLng();
+      mostrarPuntoEdicion({ lat, lng });
+    });
+  } else editMarker.setLatLng(point);
+  coordinates.textContent = `Lat ${point.lat.toFixed(6)} · Lng ${point.lng.toFixed(6)}`;
+  removeButton.disabled = false;
+}
+
+function iniciarMapaEdicion() {
+  if (editMap) return;
+  editMap = L.map('editOrderMap', { zoomControl: true }).setView([-17.769703, -63.164056], 14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(editMap);
+  editMap.on('click', event => mostrarPuntoEdicion({ lat: event.latlng.lat, lng: event.latlng.lng }));
+}
+
+function abrirEdicionPedido(pedido) {
+  editingOrder = pedido;
+  document.getElementById('editOrderName').textContent = pedido.pedido_nombre || 'Pedido';
+  document.getElementById('editOrderAddress').value = safeText(pedido.pedido_direccion);
+  document.getElementById('editLocationStatus').textContent = '';
+  document.getElementById('saveLocationEdit').disabled = false;
+  document.getElementById('editLocationDialog').showModal();
+  requestAnimationFrame(() => {
+    iniciarMapaEdicion();
+    editMap.invalidateSize();
+    const hasLocation = Number.isFinite(Number(pedido.pedido_latitud)) && Number.isFinite(Number(pedido.pedido_longitud)) && pedido.pedido_latitud !== '' && pedido.pedido_longitud !== '' && pedido.pedido_latitud != null && pedido.pedido_longitud != null;
+    if (hasLocation) {
+      const point = { lat: Number(pedido.pedido_latitud), lng: Number(pedido.pedido_longitud) };
+      mostrarPuntoEdicion(point); editMap.setView([point.lat, point.lng], 16);
+    } else {
+      mostrarPuntoEdicion(null); editMap.setView([-17.769703, -63.164056], 13);
+    }
+  });
 }
 
 async function initializeStoreMap() {
@@ -175,6 +227,10 @@ function dibujarTabla(pedidos) {
       field.append(fieldLabel, fieldValue); details.appendChild(field);
     });
     card.appendChild(details);
+
+    const editLocation = document.createElement('button'); editLocation.type = 'button'; editLocation.className = 'btn order-edit'; editLocation.textContent = 'Editar ubicación y dirección';
+    editLocation.addEventListener('click', () => abrirEdicionPedido(pedido));
+    card.appendChild(editLocation);
 
     const deliveryRow = document.createElement('label'); deliveryRow.className = 'order-delivery';
     const deliveryLabel = document.createElement('span'); deliveryLabel.textContent = 'Asignar delivery'; deliveryRow.appendChild(deliveryLabel);
@@ -307,6 +363,29 @@ document.getElementById('saveStoreLocation').addEventListener('click', async eve
     mostrarCoordenadas(storeLocation); status.textContent = 'Ubicación del local guardada.';
   } catch (error) { status.textContent = 'No se pudo guardar la ubicación.'; console.error(error); }
   finally { button.disabled = false; }
+});
+document.getElementById('cancelLocationEdit').addEventListener('click', () => document.getElementById('editLocationDialog').close());
+document.getElementById('removeOrderLocation').addEventListener('click', () => mostrarPuntoEdicion(null));
+document.getElementById('editLocationForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!editingOrder) return;
+  const button = document.getElementById('saveLocationEdit');
+  const status = document.getElementById('editLocationStatus');
+  button.disabled = true; status.textContent = 'Guardando…';
+  const payload = {
+    pedido_latitud: editPoint ? editPoint.lat : null,
+    pedido_longitud: editPoint ? editPoint.lng : null,
+    pedido_direccion: document.getElementById('editOrderAddress').value.trim()
+  };
+  try {
+    await api(`/pedidos/ubicacion/${editingOrder._id}`, { method: 'PUT', body: JSON.stringify(payload) });
+    Object.assign(editingOrder, payload);
+    document.getElementById('editLocationDialog').close();
+    dibujarTablaFiltrada();
+  } catch (error) {
+    status.textContent = error.message || 'No se pudieron guardar los cambios.';
+    button.disabled = false;
+  }
 });
 ['filterDelivery','filterStatus','filterTurno'].forEach(id => document.getElementById(id).addEventListener('input', dibujarTablaFiltrada));
 document.getElementById('clearFilters').addEventListener('click', () => { ['filterDelivery','filterStatus','filterTurno'].forEach(id => { document.getElementById(id).value = ''; }); dibujarTablaFiltrada(); });
