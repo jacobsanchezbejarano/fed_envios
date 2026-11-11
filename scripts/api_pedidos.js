@@ -77,22 +77,27 @@ function dibujarDeliveries() {
   list.replaceChildren();
   deliveries.forEach(delivery => {
     const row = document.createElement('div'); row.className = 'delivery-row';
+    const info = document.createElement('div'); info.className = 'delivery-info';
     const name = document.createElement('strong'); name.textContent = delivery.nombre;
-    const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'btn'; copy.textContent = 'Copiar enlace';
+    const description = document.createElement('span'); description.textContent = 'Abre sus pedidos asignados y le permite marcar cada entrega.';
+    info.append(name, description);
+    const actions = document.createElement('div'); actions.className = 'delivery-actions';
+    const copy = document.createElement('button'); copy.type = 'button'; copy.className = 'btn delivery-share'; copy.textContent = '↗ Copiar enlace para compartir';
+    copy.title = `Copia el enlace de pedidos asignados para ${delivery.nombre}`;
     copy.addEventListener('click', async () => {
       const url = new URL('../delivery/index.html', window.location.href); url.searchParams.set('delivery', delivery.id);
-      try { await navigator.clipboard.writeText(url.href); copy.textContent = 'Enlace copiado'; }
-      catch { window.prompt('Copia este enlace:', url.href); }
-      setTimeout(() => { copy.textContent = 'Copiar enlace'; }, 1800);
+      try { await navigator.clipboard.writeText(url.href); copy.textContent = `✓ Enlace copiado para ${delivery.nombre}`; }
+      catch { window.prompt(`Copia este enlace y envíaselo a ${delivery.nombre}:`, url.href); }
+      setTimeout(() => { copy.textContent = '↗ Copiar enlace para compartir'; }, 2400);
     });
-    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn danger'; remove.textContent = 'Eliminar';
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn delivery-remove'; remove.textContent = 'Eliminar';
     remove.addEventListener('click', async () => {
       if (!confirm(`¿Eliminar a ${delivery.nombre} de la lista de deliveries?`)) return;
       deliveries = deliveries.filter(item => item.id !== delivery.id);
       try { await guardarDeliveries(); }
       catch (error) { alert('No se pudo guardar la lista.'); console.error(error); }
     });
-    row.append(name, copy, remove); list.appendChild(row);
+    actions.append(copy, remove); row.append(info, actions); list.appendChild(row);
   });
 }
 
@@ -115,24 +120,52 @@ function filtrarPedidos() {
 
 function dibujarTablaFiltrada() { dibujarTabla(filtrarPedidos()); }
 
+function crearIconoAccion(tipo) {
+  const namespace = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(namespace, 'svg');
+  svg.setAttribute('viewBox', '0 0 24 24'); svg.setAttribute('aria-hidden', 'true');
+  if (tipo === 'mapa') {
+    const pin = document.createElementNS(namespace, 'path'); pin.setAttribute('d', 'M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z');
+    const center = document.createElementNS(namespace, 'circle'); center.setAttribute('cx', '12'); center.setAttribute('cy', '10'); center.setAttribute('r', '2.5');
+    svg.append(pin, center);
+  } else {
+    const bin = document.createElementNS(namespace, 'path'); bin.setAttribute('d', 'M4 7h16M9 4h6l1 3H8l1-3ZM6 7l1 14h10l1-14M10 11v6m4-6v6');
+    svg.appendChild(bin);
+  }
+  return svg;
+}
+
 function dibujarTabla(pedidos) {
   const container = document.getElementById('no-more-tables');
   if (!container) return;
   container.replaceChildren();
-  if (!pedidos.length) { container.innerHTML = '<p class="panel">No hay pedidos que coincidan con estos filtros.</p>'; return; }
-  const wrapper = document.createElement('div'); wrapper.className = 'table-responsive panel';
-  const table = document.createElement('table'); table.className = 'table table-bordered table-striped table-hover';
-  const head = table.createTHead().insertRow();
-  PEDIDO_COLUMNS.forEach(([, label]) => { const th = document.createElement('th'); th.textContent = label; head.appendChild(th); });
-  ['Delivery', 'Acciones'].forEach(label => { const th = document.createElement('th'); th.textContent = label; head.appendChild(th); });
-  const body = table.createTBody();
+  if (!pedidos.length) { container.appendChild(Object.assign(document.createElement('p'), { className: 'panel empty-orders', textContent: 'No hay pedidos que coincidan con estos filtros.' })); return; }
+  const grid = document.createElement('div'); grid.className = 'order-grid';
   pedidos.forEach(pedido => {
-    const row = body.insertRow();
-    PEDIDO_COLUMNS.forEach(([key, label]) => {
-      const cell = row.insertCell(); cell.dataset.title = label; cell.textContent = safeText(pedido[key]);
-      if (key === 'pedido_celular' && pedido[key]) { const link = document.createElement('a'); link.href = `https://wa.me/591${encodeURIComponent(pedido[key])}`; link.target = '_blank'; link.rel = 'noopener'; link.textContent = safeText(pedido[key]); cell.replaceChildren(link); }
+    const card = document.createElement('article'); card.className = 'order-card';
+    const header = document.createElement('div'); header.className = 'order-header';
+    const identity = document.createElement('div'); identity.className = 'order-identity';
+    const name = document.createElement('h3'); name.textContent = safeText(pedido.pedido_nombre) || 'Pedido sin nombre'; identity.appendChild(name);
+    if (pedido.pedido_celular) {
+      const phone = document.createElement('a'); phone.className = 'order-phone'; phone.href = `https://wa.me/591${encodeURIComponent(pedido.pedido_celular)}`; phone.target = '_blank'; phone.rel = 'noopener'; phone.textContent = safeText(pedido.pedido_celular); identity.appendChild(phone);
+    }
+    const isDone = pedido.pedido_estado === 'Pagado/Entregado';
+    const state = document.createElement('span'); state.className = `order-state${isDone ? ' is-done' : ''}`; state.textContent = safeText(pedido.pedido_estado) || 'Sin estado';
+    header.append(identity, state); card.appendChild(header);
+
+    const details = document.createElement('div'); details.className = 'order-details';
+    PEDIDO_COLUMNS.filter(([key]) => !['pedido_celular', 'pedido_nombre', 'pedido_estado'].includes(key)).forEach(([key, label]) => {
+      const value = safeText(pedido[key]).trim();
+      if (!value) return;
+      const field = document.createElement('div'); field.className = `order-field${key === 'pedido_comentarios' ? ' full' : ''}`;
+      const fieldLabel = document.createElement('span'); fieldLabel.textContent = label;
+      const fieldValue = document.createElement('strong'); fieldValue.textContent = value;
+      field.append(fieldLabel, fieldValue); details.appendChild(field);
     });
-    const deliveryCell = row.insertCell(); deliveryCell.dataset.title = 'Delivery';
+    card.appendChild(details);
+
+    const deliveryRow = document.createElement('label'); deliveryRow.className = 'order-delivery';
+    const deliveryLabel = document.createElement('span'); deliveryLabel.textContent = 'Asignar delivery'; deliveryRow.appendChild(deliveryLabel);
     const select = document.createElement('select'); select.className = 'delivery-select';
     const none = document.createElement('option'); none.value = ''; none.textContent = 'Sin asignar'; select.appendChild(none);
     deliveries.forEach(d => { const option = document.createElement('option'); option.value = d.id; option.textContent = d.nombre; option.selected = pedido.delivery === d.id; select.appendChild(option); });
@@ -143,24 +176,24 @@ function dibujarTabla(pedidos) {
       catch (error) { select.value = prior; alert('No se pudo asignar el delivery.'); console.error(error); }
       finally { select.disabled = false; }
     });
-    deliveryCell.appendChild(select);
-    const actions = row.insertCell(); actions.dataset.title = 'Acciones';
-    const actionButtons = document.createElement('div'); actionButtons.className = 'action-buttons';
+    deliveryRow.appendChild(select); card.appendChild(deliveryRow);
+
+    const actions = document.createElement('div'); actions.className = 'action-buttons order-actions';
+    const actionsLabel = document.createElement('span'); actionsLabel.className = 'sr-only'; actionsLabel.textContent = 'Acciones del pedido'; actions.appendChild(actionsLabel);
     if (pedido.pedido_latitud && pedido.pedido_longitud) {
-      const map = document.createElement('a'); map.className = 'btn map-btn'; map.href = `https://www.google.com/maps/place/${pedido.pedido_latitud},${pedido.pedido_longitud}`; map.target = '_blank'; map.rel = 'noopener'; map.setAttribute('aria-label', 'Ver ubicación en mapa');
-      const icon = document.createElement('span'); icon.setAttribute('aria-hidden', 'true'); icon.textContent = '📍 ';
-      map.append(icon, document.createTextNode('Ver en mapa')); actionButtons.appendChild(map);
+      const map = document.createElement('a'); map.className = 'btn icon-action map-btn'; map.href = `https://www.google.com/maps/place/${pedido.pedido_latitud},${pedido.pedido_longitud}`; map.target = '_blank'; map.rel = 'noopener'; map.setAttribute('aria-label', 'Ver ubicación en mapa'); map.title = 'Ver en mapa';
+      map.appendChild(crearIconoAccion('mapa')); actions.appendChild(map);
     }
-    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn danger'; remove.textContent = 'Eliminar';
+    const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn icon-action delete-btn'; remove.setAttribute('aria-label', `Eliminar pedido de ${pedido.pedido_nombre || 'este cliente'}`); remove.title = 'Eliminar pedido'; remove.appendChild(crearIconoAccion('eliminar'));
     remove.addEventListener('click', async () => {
       if (!confirm(`¿Eliminar el pedido de ${pedido.pedido_nombre || 'este cliente'}? Esta acción no se puede deshacer.`)) return;
       remove.disabled = true;
       try { await api(`/pedidos/${pedido._id}`, { method: 'DELETE' }); pedidosGlobales = pedidosGlobales.filter(item => item._id !== pedido._id); dibujarTablaFiltrada(); }
       catch (error) { remove.disabled = false; alert('No se pudo eliminar el pedido.'); console.error(error); }
     });
-    actionButtons.appendChild(remove); actions.appendChild(actionButtons);
+    actions.appendChild(remove); card.appendChild(actions); grid.appendChild(card);
   });
-  wrapper.appendChild(table); container.appendChild(wrapper);
+  container.appendChild(grid);
 }
 
 function celda(row, key) { return safeText(row[key]).trim(); }
@@ -217,8 +250,16 @@ async function importarExcel() {
   finally { importButton.disabled = false; }
 }
 
-document.getElementById('ordersTab').addEventListener('click', () => { document.getElementById('ordersPanel').classList.remove('hidden'); document.getElementById('deliveriesPanel').classList.add('hidden'); document.getElementById('ordersTab').classList.add('active'); document.getElementById('deliveriesTab').classList.remove('active'); });
-document.getElementById('deliveriesTab').addEventListener('click', () => { document.getElementById('deliveriesPanel').classList.remove('hidden'); document.getElementById('ordersPanel').classList.add('hidden'); document.getElementById('deliveriesTab').classList.add('active'); document.getElementById('ordersTab').classList.remove('active'); initializeStoreMap(); });
+function seleccionarPestana(tab) {
+  const sections = { orders: 'ordersPanel', deliveries: 'deliveriesPanel', store: 'storePanel' };
+  const tabs = { orders: 'ordersTab', deliveries: 'deliveriesTab', store: 'storeTab' };
+  Object.entries(sections).forEach(([key, id]) => document.getElementById(id).classList.toggle('hidden', key !== tab));
+  Object.entries(tabs).forEach(([key, id]) => document.getElementById(id).classList.toggle('active', key === tab));
+  if (tab === 'store') initializeStoreMap();
+}
+document.getElementById('ordersTab').addEventListener('click', () => seleccionarPestana('orders'));
+document.getElementById('deliveriesTab').addEventListener('click', () => seleccionarPestana('deliveries'));
+document.getElementById('storeTab').addEventListener('click', () => seleccionarPestana('store'));
 document.getElementById('deliveryForm').addEventListener('submit', async event => {
   event.preventDefault(); const name = document.getElementById('deliveryName').value.trim(); const id = slugify(name);
   if (!id || deliveries.some(d => d.id === id)) { document.getElementById('deliveryStatus').textContent = 'Ese nombre ya existe o no es válido.'; return; }
