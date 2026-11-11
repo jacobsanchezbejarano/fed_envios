@@ -133,7 +133,7 @@ function dibujarTabla(pedidos) {
       if (key === 'pedido_celular' && pedido[key]) { const link = document.createElement('a'); link.href = `https://wa.me/591${encodeURIComponent(pedido[key])}`; link.target = '_blank'; link.rel = 'noopener'; link.textContent = safeText(pedido[key]); cell.replaceChildren(link); }
     });
     const deliveryCell = row.insertCell(); deliveryCell.dataset.title = 'Delivery';
-    const select = document.createElement('select');
+    const select = document.createElement('select'); select.className = 'delivery-select';
     const none = document.createElement('option'); none.value = ''; none.textContent = 'Sin asignar'; select.appendChild(none);
     deliveries.forEach(d => { const option = document.createElement('option'); option.value = d.id; option.textContent = d.nombre; option.selected = pedido.delivery === d.id; select.appendChild(option); });
     select.value = pedido.delivery || '';
@@ -164,6 +164,10 @@ function dibujarTabla(pedidos) {
 }
 
 function celda(row, key) { return safeText(row[key]).trim(); }
+const IMPORT_FIELDS = ['pedido_latitud','pedido_longitud','pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_turno','pedido_zona','pedido_comentarios','pedido_vendedor'];
+function clavePedido(pedido) {
+  return JSON.stringify(IMPORT_FIELDS.map(key => safeText(pedido[key]).normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase()));
+}
 function filasDesdeExcel(sheet) { return XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false }); }
 function validarFila(row, index) {
   const line = index + 2;
@@ -188,15 +192,29 @@ async function importarExcel() {
   if (!rows.length) { status.textContent = 'El archivo no contiene pedidos.'; return; }
   const error = rows.map(validarFila).find(Boolean);
   if (error) { status.textContent = error; return; }
-  status.textContent = 'Importando pedidos…';
+  const importButton = document.getElementById('importButton');
+  importButton.disabled = true; status.textContent = 'Importando pedidos…';
   try {
+    const pedidosActuales = await obtenerPedidos();
+    const clavesExistentes = new Set(pedidosActuales.map(clavePedido));
+    const pedidosNuevos = [];
+    let duplicados = 0;
     for (const row of rows) {
-      const pedido = Object.fromEntries(['pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_turno','pedido_zona','pedido_comentarios','pedido_vendedor'].map(key => [key, celda(row, key)]));
-      pedido.pedido_latitud = celda(row, 'pedido_latitud'); pedido.pedido_longitud = celda(row, 'pedido_longitud');
+      const pedido = Object.fromEntries(IMPORT_FIELDS.map(key => [key, celda(row, key)]));
+      const key = clavePedido(pedido);
+      if (clavesExistentes.has(key)) { duplicados++; continue; }
+      clavesExistentes.add(key);
+      pedidosNuevos.push(pedido);
+    }
+    for (const pedido of pedidosNuevos) {
       await api('/pedidos', { method: 'POST', body: JSON.stringify(pedido) });
     }
-    pedidosGlobales = await obtenerPedidos(); dibujarTablaFiltrada(); input.value = ''; status.textContent = `${rows.length} pedido(s) importado(s).`;
+    pedidosGlobales = await obtenerPedidos(); dibujarTablaFiltrada(); input.value = ''; mostrarArchivoSeleccionado();
+    status.textContent = pedidosNuevos.length
+      ? `${pedidosNuevos.length} pedido(s) importado(s); ${duplicados} duplicado(s) omitido(s).`
+      : `No había pedidos nuevos. Se omitieron ${duplicados} duplicado(s).`;
   } catch (error) { status.textContent = `La importación se detuvo: ${error.message}`; console.error(error); }
+  finally { importButton.disabled = false; }
 }
 
 document.getElementById('ordersTab').addEventListener('click', () => { document.getElementById('ordersPanel').classList.remove('hidden'); document.getElementById('deliveriesPanel').classList.add('hidden'); document.getElementById('ordersTab').classList.add('active'); document.getElementById('deliveriesTab').classList.remove('active'); });
@@ -209,6 +227,23 @@ document.getElementById('deliveryForm').addEventListener('submit', async event =
   catch (error) { deliveries.pop(); document.getElementById('deliveryStatus').textContent = 'No se pudo guardar el delivery.'; console.error(error); }
 });
 document.getElementById('importButton').addEventListener('click', importarExcel);
+const excelInput = document.getElementById('excelFile');
+const dropZone = document.getElementById('fileDropZone');
+const selectedFile = document.getElementById('selectedFile');
+function mostrarArchivoSeleccionado() {
+  selectedFile.textContent = excelInput.files.length ? excelInput.files[0].name : 'Ningún archivo seleccionado';
+}
+document.getElementById('chooseFile').addEventListener('click', () => excelInput.click());
+excelInput.addEventListener('change', mostrarArchivoSeleccionado);
+dropZone.addEventListener('dragover', event => { event.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', event => {
+  event.preventDefault(); dropZone.classList.remove('dragover');
+  const file = event.dataTransfer.files[0];
+  if (!file || !/\.xlsx?$/i.test(file.name)) { document.getElementById('importStatus').textContent = 'Selecciona un archivo .xlsx o .xls.'; return; }
+  const transfer = new DataTransfer(); transfer.items.add(file); excelInput.files = transfer.files; mostrarArchivoSeleccionado();
+  document.getElementById('importStatus').textContent = '';
+});
 document.getElementById('saveStoreLocation').addEventListener('click', async event => {
   if (!storeLocation) return;
   const button = event.currentTarget; const status = document.getElementById('storeLocationStatus'); button.disabled = true; status.textContent = 'Guardando ubicación…';
