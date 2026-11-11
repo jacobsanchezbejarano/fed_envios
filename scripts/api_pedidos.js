@@ -153,7 +153,7 @@ function dibujarTabla(pedidos) {
     }
     const remove = document.createElement('button'); remove.type = 'button'; remove.className = 'btn danger'; remove.textContent = 'Eliminar';
     remove.addEventListener('click', async () => {
-      if (!confirm(`¿Eliminar el pedido de ${pedido.pedido_nombre || pedido.pedido_id}? Esta acción no se puede deshacer.`)) return;
+      if (!confirm(`¿Eliminar el pedido de ${pedido.pedido_nombre || 'este cliente'}? Esta acción no se puede deshacer.`)) return;
       remove.disabled = true;
       try { await api(`/pedidos/${pedido._id}`, { method: 'DELETE' }); pedidosGlobales = pedidosGlobales.filter(item => item._id !== pedido._id); dibujarTablaFiltrada(); }
       catch (error) { remove.disabled = false; alert('No se pudo eliminar el pedido.'); console.error(error); }
@@ -167,7 +167,7 @@ function celda(row, key) { return safeText(row[key]).trim(); }
 function filasDesdeExcel(sheet) { return XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false }); }
 function validarFila(row, index) {
   const line = index + 2;
-  const required = ['pedido_id','pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_zona','pedido_comentarios','pedido_vendedor'];
+  const required = ['pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_zona','pedido_comentarios','pedido_vendedor'];
   const missing = required.filter(key => !celda(row, key));
   if (missing.length) return `Fila ${line}: faltan ${missing.join(', ')}.`;
   if (!VALID_STATES.includes(celda(row, 'pedido_estado'))) return `Fila ${line}: estado no permitido.`;
@@ -191,7 +191,7 @@ async function importarExcel() {
   status.textContent = 'Importando pedidos…';
   try {
     for (const row of rows) {
-      const pedido = Object.fromEntries(['pedido_id','pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_turno','pedido_zona','pedido_comentarios','pedido_vendedor'].map(key => [key, celda(row, key)]));
+      const pedido = Object.fromEntries(['pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_turno','pedido_zona','pedido_comentarios','pedido_vendedor'].map(key => [key, celda(row, key)]));
       pedido.pedido_latitud = celda(row, 'pedido_latitud'); pedido.pedido_longitud = celda(row, 'pedido_longitud');
       await api('/pedidos', { method: 'POST', body: JSON.stringify(pedido) });
     }

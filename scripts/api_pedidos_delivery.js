@@ -48,7 +48,6 @@ function dibujarPedidos() {
     const heading = crearElemento('div', 'order-heading');
     const titleGroup = document.createElement('div');
     titleGroup.appendChild(crearElemento('h3', '', pedido.pedido_nombre || 'Pedido'));
-    if (pedido.pedido_id) titleGroup.appendChild(crearElemento('span', 'order-id', `Pedido ${pedido.pedido_id}`));
     const isDone = pedido.pedido_estado === 'Pagado/Entregado';
     heading.append(titleGroup, crearElemento('span', `badge${isDone ? ' done' : ''}`, isDone ? 'Entregado' : pedido.pedido_estado || 'Pendiente'));
     card.appendChild(heading);
@@ -86,7 +85,7 @@ function dibujarPedidos() {
 }
 
 async function marcarComoEntregado(pedido, button) {
-  if (!confirm(`¿Marcar el pedido de ${pedido.pedido_nombre || pedido.pedido_id} como entregado?`)) return;
+  if (!confirm(`¿Marcar el pedido de ${pedido.pedido_nombre || 'este cliente'} como entregado?`)) return;
   const apiKey = obtenerApiKey();
   if (!apiKey) return;
   button.disabled = true;
