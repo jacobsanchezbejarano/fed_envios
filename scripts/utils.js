@@ -50,12 +50,3 @@ map.on('click', function(e) {
     document.getElementById('pedido_longitud').value = e.latlng.lng;
 });
 
-(async () => {
-    try {
-      const pedidos = await obtenerPedidos();
-      dibujarTabla(pedidos);
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  })();
-  

@@ -25,6 +25,28 @@ async function api(path, options = {}) {
 
 async function obtenerPedidos() { return api('/pedidos'); }
 async function cargarDeliveries() { deliveries = await api('/pedidos/deliveries/list'); }
+async function enviarPedido(event) {
+  event.preventDefault();
+  const form = document.getElementById('pedidoForm');
+  const data = Object.fromEntries(new FormData(form).entries());
+  const button = event.currentTarget?.closest('button') || form.querySelector('button[type="submit"], button[type="button"]');
+  const originalText = button?.textContent;
+  if (button) { button.disabled = true; button.textContent = 'Enviando…'; }
+  try {
+    const response = await fetch(`${API_URL}/pedidos`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    if (!response.ok) throw new Error('No se pudo guardar el pedido.');
+    alert('Pedido guardado correctamente.');
+    location.reload();
+  } catch (error) {
+    console.error('Error al guardar el pedido:', error);
+    alert(error.message);
+    if (button) { button.disabled = false; button.textContent = originalText; }
+  }
+}
 function slugify(text) {
   return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
@@ -257,6 +279,7 @@ function seleccionarPestana(tab) {
   Object.entries(tabs).forEach(([key, id]) => document.getElementById(id).classList.toggle('active', key === tab));
   if (tab === 'store') initializeStoreMap();
 }
+if (document.getElementById('ordersTab')) {
 document.getElementById('ordersTab').addEventListener('click', () => seleccionarPestana('orders'));
 document.getElementById('deliveriesTab').addEventListener('click', () => seleccionarPestana('deliveries'));
 document.getElementById('storeTab').addEventListener('click', () => seleccionarPestana('store'));
@@ -301,3 +324,4 @@ document.getElementById('clearFilters').addEventListener('click', () => { ['filt
   try { [pedidosGlobales, deliveries] = await Promise.all([obtenerPedidos(), cargarDeliveries().then(() => deliveries)]); llenarFiltroDeliveries(); dibujarDeliveries(); dibujarTablaFiltrada(); }
   catch (error) { document.getElementById('importStatus').textContent = `No se pudieron cargar los pedidos: ${error.message}`; console.error(error); }
 })();
+}
