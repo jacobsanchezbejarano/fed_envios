@@ -1,8 +1,8 @@
 const API_URL = false ? "http://localhost:3000" : 'https://envios-rdb6.onrender.com';
 const PEDIDO_COLUMNS = [
   ['pedido_celular', 'Celular'], ['pedido_nombre', 'Nombre'], ['pedido_cantidad', 'Cantidad'],
-  ['pedido_estado', 'Estado'], ['pedido_tipo', 'Tipo'], ['pedido_hora_entrega', 'Hora'],
-  ['pedido_turno', 'Horario'], ['pedido_zona', 'Zona'], ['pedido_comentarios', 'Comentarios'],
+  ['pedido_estado', 'Estado'], ['pedido_tipo', 'Tipo'], ['pedido_turno', 'Turno'],
+  ['pedido_forma_pago', 'Forma de pago'], ['pedido_direccion', 'Dirección'], ['pedido_zona', 'Zona'], ['pedido_comentarios', 'Comentarios'],
   ['pedido_vendedor', 'Vendedor']
 ];
 const VALID_STATES = ['ENCARGADO', 'Pagado/Entregado'];
@@ -123,21 +123,11 @@ function dibujarDeliveries() {
   });
 }
 
-function horaEnMinutos(value) {
-  const match = safeText(value).trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
-  if (!match) return null;
-  let hour = Number(match[1]) % 12;
-  if (match[3].toUpperCase() === 'PM') hour += 12;
-  return hour * 60 + Number(match[2]);
-}
-
 function filtrarPedidos() {
   const delivery = document.getElementById('filterDelivery').value;
   const status = document.getElementById('filterStatus').value;
   const turno = document.getElementById('filterTurno').value;
-  const hour = document.getElementById('filterHour').value;
-  const minutes = hour ? Number(hour.slice(0, 2)) * 60 + Number(hour.slice(3, 5)) : null;
-  return pedidosGlobales.filter(p => (!delivery || p.delivery === delivery) && (!status || p.pedido_estado === status) && (!turno || p.pedido_turno === turno) && (minutes === null || horaEnMinutos(p.pedido_hora_entrega) === minutes));
+  return pedidosGlobales.filter(p => (!delivery || p.delivery === delivery) && (!status || p.pedido_estado === status) && (!turno || p.pedido_turno === turno));
 }
 
 function dibujarTablaFiltrada() { dibujarTabla(filtrarPedidos()); }
@@ -219,23 +209,24 @@ function dibujarTabla(pedidos) {
 }
 
 function celda(row, key) { return safeText(row[key]).trim(); }
-const IMPORT_FIELDS = ['pedido_latitud','pedido_longitud','pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_turno','pedido_zona','pedido_comentarios','pedido_vendedor'];
+const IMPORT_FIELDS = ['pedido_latitud','pedido_longitud','pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_turno','pedido_forma_pago','pedido_direccion','pedido_zona','pedido_comentarios','pedido_vendedor'];
 function clavePedido(pedido) {
   return JSON.stringify(IMPORT_FIELDS.map(key => safeText(pedido[key]).normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase()));
 }
 function filasDesdeExcel(sheet) { return XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false }); }
 function validarFila(row, index) {
   const line = index + 2;
-  const required = ['pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_hora_entrega','pedido_zona','pedido_comentarios','pedido_vendedor'];
+  const required = ['pedido_celular','pedido_nombre','pedido_cantidad','pedido_estado','pedido_tipo','pedido_turno','pedido_forma_pago','pedido_zona','pedido_vendedor'];
   const missing = required.filter(key => !celda(row, key));
   if (missing.length) return `Fila ${line}: faltan ${missing.join(', ')}.`;
   if (!VALID_STATES.includes(celda(row, 'pedido_estado'))) return `Fila ${line}: estado no permitido.`;
   if (!VALID_TYPES.includes(celda(row, 'pedido_tipo'))) return `Fila ${line}: tipo de entrega no permitido.`;
-  if (!/^(0?[1-9]|1[0-2]):[0-5]\d\s*(AM|PM)$/i.test(celda(row, 'pedido_hora_entrega'))) return `Fila ${line}: la hora debe tener formato 12 horas y AM o PM (ej.: 2:30 PM).`;
+  if (!['Mañana','Tarde','Noche'].includes(celda(row, 'pedido_turno'))) return `Fila ${line}: turno debe ser Mañana, Tarde o Noche.`;
+  if (!['QR','Efectivo'].includes(celda(row, 'pedido_forma_pago'))) return `Fila ${line}: forma de pago debe ser QR o Efectivo.`;
+  if (celda(row, 'pedido_tipo').toLowerCase() === 'delivery' && !celda(row, 'pedido_direccion')) return `Fila ${line}: indica la dirección de entrega para los pedidos Delivery.`;
   const lat = celda(row, 'pedido_latitud'), lng = celda(row, 'pedido_longitud');
   if ((lat && !lng) || (!lat && lng)) return `Fila ${line}: completa latitud y longitud juntas o deja ambas vacías.`;
   if (lat && (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng)))) return `Fila ${line}: ubicación inválida.`;
-  if (celda(row, 'pedido_turno') && !['Medio día', 'Noche'].includes(celda(row, 'pedido_turno'))) return `Fila ${line}: turno debe ser Medio día o Noche.`;
   return null;
 }
 
@@ -317,8 +308,8 @@ document.getElementById('saveStoreLocation').addEventListener('click', async eve
   } catch (error) { status.textContent = 'No se pudo guardar la ubicación.'; console.error(error); }
   finally { button.disabled = false; }
 });
-['filterDelivery','filterStatus','filterTurno','filterHour'].forEach(id => document.getElementById(id).addEventListener('input', dibujarTablaFiltrada));
-document.getElementById('clearFilters').addEventListener('click', () => { ['filterDelivery','filterStatus','filterTurno','filterHour'].forEach(id => { document.getElementById(id).value = ''; }); dibujarTablaFiltrada(); });
+['filterDelivery','filterStatus','filterTurno'].forEach(id => document.getElementById(id).addEventListener('input', dibujarTablaFiltrada));
+document.getElementById('clearFilters').addEventListener('click', () => { ['filterDelivery','filterStatus','filterTurno'].forEach(id => { document.getElementById(id).value = ''; }); dibujarTablaFiltrada(); });
 
 (async () => {
   try { [pedidosGlobales, deliveries] = await Promise.all([obtenerPedidos(), cargarDeliveries().then(() => deliveries)]); llenarFiltroDeliveries(); dibujarDeliveries(); dibujarTablaFiltrada(); }

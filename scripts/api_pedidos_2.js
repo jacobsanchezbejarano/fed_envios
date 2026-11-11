@@ -83,13 +83,12 @@ function crearPopupPedido(pedido) {
 
     <h3 style="margin:0">${pedido.pedido_nombre}</h3>
 
-    <div style="font-size:18px;font-weight:bold">
-        ⏰ ${pedido.pedido_hora_entrega}
-    </div>
-
+    <div style="font-size:18px;font-weight:bold">Turno: ${pedido.pedido_turno || '—'}</div>
+    <b>Forma de pago:</b> ${pedido.pedido_forma_pago || '—'}<br>
     <b>Cantidad:</b> ${pedido.pedido_cantidad}<br>
     <b>Zona:</b> ${pedido.pedido_zona}<br>
     <b>Tipo:</b> ${pedido.pedido_tipo}<br>
+    <b>Dirección:</b> ${pedido.pedido_direccion || '—'}<br>
 
     <b style="color:${estadoColor}">
         Estado: ${pedido.pedido_estado}
@@ -132,11 +131,6 @@ function mostrarPedidosEnMapa(pedidos) {
 
     const deliveryFilter = getDeliveryFilter();
 
-    const ahora = new Date();
-    const limite = new Date(ahora.getTime() + (2 * 60 * 60 * 1000));
-
-    let pedidosFuturosCount = 0;
-
     pedidos.forEach(pedido => {
 
         if (!pedido.pedido_latitud || !pedido.pedido_longitud) return;
@@ -145,18 +139,6 @@ function mostrarPedidosEnMapa(pedidos) {
         if (pedido.pedido_tipo && pedido.pedido_tipo.toUpperCase() === "EN LUGAR") return;
 
         if (deliveryFilter && pedido.delivery !== deliveryFilter) return;
-
-        if (!pedido.pedido_hora_entrega) return;
-
-        const [h, m] = pedido.pedido_hora_entrega.split(":");
-        const horaPedido = new Date();
-        horaPedido.setHours(h, m, 0, 0);
-
-        // CONTAR pedidos para más tarde
-        if (horaPedido > limite) {
-            pedidosFuturosCount++;
-            return;
-        }
 
         let color = obtenerColorDelivery(pedido.delivery);
 
@@ -179,10 +161,6 @@ function mostrarPedidosEnMapa(pedidos) {
 
     });
 
-    // Mostrar rango visible
-    const desde = ahora.toTimeString().slice(0,5);
-    const hasta = limite.toTimeString().slice(0,5);
-
     let info = document.getElementById("mapInfo");
 
     if (!info) {
@@ -196,11 +174,8 @@ function mostrarPedidosEnMapa(pedidos) {
         document.body.prepend(info);
     }
 
-    info.innerHTML = `
-    Mostrando pedidos desde <b>${desde}</b> hasta <b>${hasta}</b><br>
-    (Incluye todos los pedidos pasados)<br>
-    Pedidos para más tarde: <b>${pedidosFuturosCount}</b>
-    `;
+    const ubicados = pedidos.filter(p => p.pedido_latitud && p.pedido_longitud && p.pedido_tipo?.toUpperCase() !== "EN LUGAR" && (!deliveryFilter || p.delivery === deliveryFilter)).length;
+    info.textContent = `Mostrando ${ubicados} pedido(s) con ubicación`;
 
 }
 
@@ -362,7 +337,7 @@ function dibujarTabla(pedidos){
         {title:"Cantidad"},
         {title:"Estado Pedido"},
         {title:"Tipo de Pedido"},
-        {title:"Hora entrega"},
+        {title:"Turno"},
         {title:"Zona"},
         {title:"Comentarios"},
         {title:"Vendedor"},
@@ -410,7 +385,9 @@ function dibujarTabla(pedidos){
                 case 'pedido_cantidad':
                 case 'pedido_estado':
                 case 'pedido_tipo':
-                case 'pedido_hora_entrega':
+                case 'pedido_turno':
+                case 'pedido_forma_pago':
+                case 'pedido_direccion':
                 case 'pedido_zona':
                 case 'pedido_comentarios':
                 case 'pedido_vendedor':

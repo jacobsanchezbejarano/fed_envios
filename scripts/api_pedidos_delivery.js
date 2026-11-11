@@ -88,10 +88,11 @@ function crearPopupPedido(pedido) {
 
   const grid = node('div', 'popup-grid');
   grid.append(
-    field('Hora', pedido.pedido_hora_entrega),
-    field('Horario', pedido.pedido_turno),
+    field('Turno', pedido.pedido_turno),
+    field('Forma de pago', pedido.pedido_forma_pago),
     field('Cantidad', pedido.pedido_cantidad),
     field('Tipo', pedido.pedido_tipo),
+    field('Dirección', pedido.pedido_direccion),
     field('Zona', pedido.pedido_zona),
     field('Vendedor', pedido.pedido_vendedor)
   );
@@ -215,9 +216,9 @@ function dibujarResumen() {
     heading.append(title, node('span', `badge${isDone ? ' done' : ''}`, isDone ? 'Entregado' : pedido.pedido_estado || 'Pendiente'));
     card.appendChild(heading);
     const details = node('div', 'details');
-    addDetail(details, 'Hora', pedido.pedido_hora_entrega); addDetail(details, 'Horario', pedido.pedido_turno);
+    addDetail(details, 'Turno', pedido.pedido_turno); addDetail(details, 'Forma de pago', pedido.pedido_forma_pago);
     addDetail(details, 'Cantidad', pedido.pedido_cantidad); addDetail(details, 'Tipo', pedido.pedido_tipo);
-    addDetail(details, 'Zona', pedido.pedido_zona); addDetail(details, 'Vendedor', pedido.pedido_vendedor);
+    addDetail(details, 'Dirección', pedido.pedido_direccion); addDetail(details, 'Zona', pedido.pedido_zona); addDetail(details, 'Vendedor', pedido.pedido_vendedor);
     card.appendChild(details);
     if (pedido.pedido_comentarios) card.appendChild(node('p', 'comment', `Nota: ${pedido.pedido_comentarios}`));
     const actions = node('div', 'actions');

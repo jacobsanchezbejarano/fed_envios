@@ -160,15 +160,36 @@ Toca el mapa para marcar la ubicación del cliente
 </div>
 
 <div class="form-group">
-<label class="required">Hora de Entrega</label>
-<input type="time" id="pedido_hora_entrega" name="pedido_hora_entrega" value="12:00">
-<div class="error-message">Seleccione una hora</div>
+<label class="required">Turno de entrega</label>
+<select id="pedido_turno" name="pedido_turno">
+<option value="">Seleccionar turno</option>
+<option value="Mañana">Mañana</option>
+<option value="Tarde">Tarde</option>
+<option value="Noche">Noche</option>
+</select>
+<div class="error-message">Seleccione mañana, tarde o noche</div>
+</div>
+
+<div class="form-group">
+<label class="required">Forma de pago</label>
+<select id="pedido_forma_pago" name="pedido_forma_pago">
+<option value="">Seleccionar forma de pago</option>
+<option value="QR">QR</option>
+<option value="Efectivo">Efectivo</option>
+</select>
+<div class="error-message">Seleccione QR o efectivo</div>
 </div>
 
 <div class="form-group">
 <label class="required">Zona</label>
 <input type="text" id="pedido_zona" name="pedido_zona" placeholder="Ej: Equipetrol">
 <div class="error-message">Ingrese la zona</div>
+</div>
+
+<div class="form-group">
+<label id="direccionLabel">Dirección de entrega (obligatoria para Delivery)</label>
+<input type="text" id="pedido_direccion" name="pedido_direccion" placeholder="Calle, número, edificio o referencia">
+<div class="error-message">Ingrese la dirección de entrega</div>
 </div>
 
 <div class="form-group">
@@ -206,7 +227,8 @@ const requiredFields=[
 "pedido_nombre",
 "pedido_cantidad",
 "pedido_tipo",
-"pedido_hora_entrega",
+"pedido_turno",
+"pedido_forma_pago",
 "pedido_zona",
 "pedido_vendedor"
 ]
@@ -236,6 +258,18 @@ if(input.nextElementSibling) input.nextElementSibling.style.display="none"
 }
 
 })
+
+const tipo=document.getElementById("pedido_tipo").value
+const direccion=document.getElementById("pedido_direccion")
+const direccionError=direccion.nextElementSibling
+if(tipo==="DELIVERY" && !direccion.value.trim()){
+valido=false
+direccion.classList.add("error")
+direccionError.style.display="block"
+}else{
+direccion.classList.remove("error")
+direccionError.style.display="none"
+}
 
 if(!valido){
 
